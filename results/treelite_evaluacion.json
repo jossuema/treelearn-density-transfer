@@ -1,0 +1,303 @@
+{
+  "ajustes_probados": [
+    "t1",
+    "t10",
+    "t2",
+    "t3",
+    "t3_p12",
+    "t3_p30",
+    "t4",
+    "t4_p12",
+    "t4_p20",
+    "t4_p30",
+    "t4_p50",
+    "t5",
+    "t5_p12",
+    "t5_p20",
+    "t5_p30",
+    "t5_p50",
+    "t6",
+    "t6_p12",
+    "t6_p20",
+    "t6_p30",
+    "t6_p50",
+    "t8",
+    "t8_p30"
+  ],
+  "mejor": "t4_p30",
+  "D": 3.5,
+  "por defecto": {
+    "ajuste": "t1",
+    "Chamrousse": {
+      "TP": 16,
+      "ND": 16,
+      "NR": 894,
+      "recall": 0.018,
+      "precision": 1.0,
+      "f1": 0.035,
+      "recall_ic": [
+        0.006,
+        0.042
+      ],
+      "precision_ic": [
+        1.0,
+        1.0
+      ],
+      "f1_ic": [
+        0.012,
+        0.081
+      ],
+      "nparc": 7
+    },
+    "Pellizzano": {
+      "TP": 92,
+      "ND": 103,
+      "NR": 543,
+      "recall": 0.169,
+      "precision": 0.893,
+      "f1": 0.285,
+      "recall_ic": [
+        0.114,
+        0.254
+      ],
+      "precision_ic": [
+        0.853,
+        0.944
+      ],
+      "f1_ic": [
+        0.203,
+        0.393
+      ],
+      "nparc": 15
+    },
+    "Ambos": {
+      "TP": 108,
+      "ND": 119,
+      "NR": 1437,
+      "recall": 0.075,
+      "precision": 0.908,
+      "f1": 0.139,
+      "recall_ic": [
+        0.043,
+        0.139
+      ],
+      "precision_ic": [
+        0.87,
+        0.954
+      ],
+      "f1_ic": [
+        0.082,
+        0.239
+      ],
+      "nparc": 22
+    }
+  },
+  "oracular": {
+    "ajuste": "t4_p30",
+    "Chamrousse": {
+      "TP": 442,
+      "ND": 593,
+      "NR": 894,
+      "recall": 0.494,
+      "precision": 0.745,
+      "f1": 0.594,
+      "recall_ic": [
+        0.424,
+        0.598
+      ],
+      "precision_ic": [
+        0.66,
+        0.846
+      ],
+      "f1_ic": [
+        0.559,
+        0.637
+      ],
+      "nparc": 7
+    },
+    "Pellizzano": {
+      "TP": 368,
+      "ND": 576,
+      "NR": 543,
+      "recall": 0.678,
+      "precision": 0.639,
+      "f1": 0.658,
+      "recall_ic": [
+        0.607,
+        0.746
+      ],
+      "precision_ic": [
+        0.557,
+        0.715
+      ],
+      "f1_ic": [
+        0.615,
+        0.694
+      ],
+      "nparc": 15
+    },
+    "Ambos": {
+      "TP": 810,
+      "ND": 1169,
+      "NR": 1437,
+      "recall": 0.564,
+      "precision": 0.693,
+      "f1": 0.622,
+      "recall_ic": [
+        0.506,
+        0.667
+      ],
+      "precision_ic": [
+        0.624,
+        0.752
+      ],
+      "f1_ic": [
+        0.594,
+        0.659
+      ],
+      "nparc": 22
+    }
+  },
+  "una_fuera": {
+    "elegidos": {
+      "cham/1": "t4_p30",
+      "cham/1b": "t4_p30",
+      "cham/2": "t4_p30",
+      "cham/3": "t4_p30",
+      "cham/3b": "t4_p30",
+      "cham/4": "t4_p30",
+      "cham/Premol": "t4_p30",
+      "pell/p1": "t4_p30",
+      "pell/p2": "t4_p30",
+      "pell/p3": "t4_p30",
+      "pell/p4": "t4_p30",
+      "pell/p5": "t4_p30",
+      "pell/p6": "t4_p30",
+      "pell/p7": "t4_p30",
+      "pell/p8": "t4_p30",
+      "pell/p9": "t4_p30",
+      "pell/p10": "t4_p30",
+      "pell/p11": "t4_p30",
+      "pell/p12": "t4_p30",
+      "pell/p13": "t4_p30",
+      "pell/p14": "t4_p30",
+      "pell/p15": "t4_p30"
+    },
+    "Chamrousse": {
+      "TP": 442,
+      "ND": 593,
+      "NR": 894,
+      "recall": 0.494,
+      "precision": 0.745,
+      "f1": 0.594,
+      "recall_ic": [
+        0.424,
+        0.598
+      ],
+      "precision_ic": [
+        0.66,
+        0.846
+      ],
+      "f1_ic": [
+        0.559,
+        0.637
+      ],
+      "nparc": 7
+    },
+    "Pellizzano": {
+      "TP": 368,
+      "ND": 576,
+      "NR": 543,
+      "recall": 0.678,
+      "precision": 0.639,
+      "f1": 0.658,
+      "recall_ic": [
+        0.607,
+        0.746
+      ],
+      "precision_ic": [
+        0.557,
+        0.715
+      ],
+      "f1_ic": [
+        0.615,
+        0.694
+      ],
+      "nparc": 15
+    },
+    "Ambos": {
+      "TP": 810,
+      "ND": 1169,
+      "NR": 1437,
+      "recall": 0.564,
+      "precision": 0.693,
+      "f1": 0.622,
+      "recall_ic": [
+        0.506,
+        0.667
+      ],
+      "precision_ic": [
+        0.624,
+        0.752
+      ],
+      "f1_ic": [
+        0.594,
+        0.659
+      ],
+      "nparc": 22
+    }
+  },
+  "estratos": {
+    "Chamrousse": {
+      "dominante": {
+        "n": 481,
+        "TP": 312,
+        "recall": 0.649
+      },
+      "intermedio": {
+        "n": 297,
+        "TP": 88,
+        "recall": 0.296
+      },
+      "suprimido": {
+        "n": 116,
+        "TP": 42,
+        "recall": 0.362
+      }
+    },
+    "Pellizzano": {
+      "dominante": {
+        "n": 367,
+        "TP": 274,
+        "recall": 0.747
+      },
+      "intermedio": {
+        "n": 84,
+        "TP": 49,
+        "recall": 0.583
+      },
+      "suprimido": {
+        "n": 92,
+        "TP": 45,
+        "recall": 0.489
+      }
+    },
+    "Ambos": {
+      "dominante": {
+        "n": 848,
+        "TP": 586,
+        "recall": 0.691
+      },
+      "intermedio": {
+        "n": 381,
+        "TP": 137,
+        "recall": 0.36
+      },
+      "suprimido": {
+        "n": 208,
+        "TP": 87,
+        "recall": 0.418
+      }
+    }
+  }
+}

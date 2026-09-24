@@ -1,0 +1,1767 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visor TreeLearn</title>
+<style>
+:root{
+  --bg:#f7f7f5; --panel:#ffffff; --linea:#e2e0da; --texto:#1c1b19; --suave:#6f6b63;
+  --acento:#1b3b6f; --sat:#1b3b6f; --ams:#d1701a; --ws:#7a8b7f;
+  --ff3d:#2e7d5b; --tl3d:#8e44ad;
+  --ok:#1f7a5a; --fallo:#c2402a; --fp:#8a6bbf; --sel:#111;
+  --lienzo:#efeee9;
+}
+:root[data-tema="oscuro"]{
+  --bg:#15161a; --panel:#1c1e23; --linea:#2e3138; --texto:#e8e6e1; --suave:#98948c;
+  --acento:#6f9bd8; --sat:#6f9bd8; --ams:#e8964a; --ws:#9db0a4;
+  --ff3d:#4aa87d; --tl3d:#b07fd6;
+  --ok:#49b58c; --fallo:#e2705a; --fp:#ab8ee0; --sel:#fff;
+  --lienzo:#101216;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--texto);
+  font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  overflow:hidden;
+}
+button,select,input{font:inherit;color:inherit}
+
+/* ---------------------------------------------------------------- estructura */
+#app{display:grid;grid-template-rows:auto 1fr;height:100%}
+header{
+  display:flex;align-items:center;gap:14px;padding:8px 14px;
+  background:var(--panel);border-bottom:1px solid var(--linea);
+}
+header h1{font-size:14px;font-weight:650;margin:0;letter-spacing:-.01em}
+header h1 span{color:var(--suave);font-weight:400}
+.tabs{display:flex;gap:2px;margin-left:8px}
+.tabs button{
+  background:none;border:0;padding:5px 12px;border-radius:6px;cursor:pointer;
+  color:var(--suave);font-weight:550;
+}
+.tabs button:hover{background:var(--bg)}
+.tabs button[aria-selected="true"]{background:var(--acento);color:#fff}
+.crece{flex:1}
+.iconbtn{
+  background:var(--bg);border:1px solid var(--linea);border-radius:6px;
+  padding:4px 9px;cursor:pointer;color:var(--suave);
+}
+.iconbtn:hover{border-color:var(--suave);color:var(--texto)}
+
+#cuerpo{display:grid;grid-template-columns:206px 1fr 274px;overflow:hidden}
+#cuerpo.solo{grid-template-columns:1fr}
+aside{
+  background:var(--panel);overflow-y:auto;padding:10px;
+  border-right:1px solid var(--linea);
+}
+aside.der{border-right:0;border-left:1px solid var(--linea)}
+main{position:relative;overflow:hidden;background:var(--lienzo)}
+canvas{display:block;width:100%;height:100%}
+
+/* ---------------------------------------------------------------- controles */
+.grupo{margin-bottom:14px}
+.grupo>h2{
+  font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--suave);
+  margin:0 0 6px;font-weight:650;
+}
+.parcela{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;
+  padding:3px 6px;border-radius:5px;cursor:pointer;
+}
+.parcela:hover{background:var(--bg)}
+.parcela[aria-current="true"]{background:var(--acento);color:#fff}
+.parcela[aria-current="true"] .barra i{background:#fff;opacity:.85}
+.parcela .nom{font-variant-numeric:tabular-nums}
+.parcela .barra{width:46px;height:5px;background:var(--linea);border-radius:3px;overflow:hidden}
+.parcela .barra i{display:block;height:100%;background:var(--acento)}
+.sitio{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--suave);
+  margin:10px 0 4px;font-weight:650}
+.sitio:first-child{margin-top:0}
+
+label.fila{display:flex;align-items:center;gap:7px;padding:3px 0;cursor:pointer}
+label.fila input{margin:0}
+.pastilla{display:inline-block;width:9px;height:9px;border-radius:2px;flex:none}
+.seg{display:flex;border:1px solid var(--linea);border-radius:6px;overflow:hidden}
+.seg button{flex:1;background:var(--panel);border:0;padding:4px 0;cursor:pointer;color:var(--suave)}
+.seg button[aria-pressed="true"]{background:var(--acento);color:#fff}
+select{width:100%;padding:4px 6px;border:1px solid var(--linea);border-radius:6px;background:var(--panel)}
+input[type=range]{width:100%}
+
+/* ---------------------------------------------------------------- panel der */
+.kv{display:grid;grid-template-columns:1fr auto;gap:1px 8px;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--suave)}
+.kv dd{margin:0;text-align:right}
+table.met{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.met th,table.met td{padding:3px 4px;text-align:right;border-bottom:1px solid var(--linea)}
+table.met th:first-child,table.met td:first-child{text-align:left}
+table.met thead th{color:var(--suave);font-weight:600;font-size:11px}
+.leyenda{display:flex;flex-direction:column;gap:4px;font-size:12px}
+.leyenda div{display:flex;align-items:center;gap:7px}
+.nota{color:var(--suave);font-size:11px;line-height:1.4}
+.vacio{color:var(--suave);padding:20px;text-align:center}
+
+/* ---------------------------------------------------------------- flotantes */
+#tip{
+  position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--linea);
+  border-radius:7px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.14);
+  max-width:230px;display:none;z-index:20;font-variant-numeric:tabular-nums;
+}
+#escala{
+  position:absolute;left:12px;bottom:12px;background:var(--panel);border:1px solid var(--linea);
+  border-radius:6px;padding:3px 8px;font-size:11px;color:var(--suave);z-index:10;
+}
+#ayuda{
+  position:absolute;right:12px;bottom:12px;color:var(--suave);font-size:11px;
+  background:var(--panel);border:1px solid var(--linea);border-radius:6px;padding:3px 8px;z-index:10;
+}
+#cargando{
+  position:absolute;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;
+  color:var(--suave);
+}
+
+/* ---------------------------------------------------------------- resultados */
+#vista-res{padding:18px 22px;overflow-y:auto;height:100%;background:var(--bg)}
+#vista-res h2{font-size:15px;margin:0 0 3px}
+#vista-res h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--suave);
+  margin:22px 0 8px;font-weight:650}
+.tarjetas{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tarjeta{background:var(--panel);border:1px solid var(--linea);border-radius:10px;padding:12px 14px}
+.tarjeta h4{margin:0 0 8px;font-size:12px;color:var(--suave);font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+table.big{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;background:var(--panel)}
+table.big th,table.big td{padding:5px 8px;border-bottom:1px solid var(--linea);text-align:right}
+table.big th:first-child,table.big td:first-child{text-align:left}
+table.big thead th{color:var(--suave);font-size:11px;font-weight:600}
+table.big tr.sep td{background:var(--bg);font-weight:650;text-align:left;color:var(--suave);
+  font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.mejor{font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Visor TreeLearn <span id="sub"></span></h1>
+    <nav class="tabs" id="tabs">
+      <button data-v="mapa" aria-selected="true">Mapa</button>
+      <button data-v="nube" aria-selected="false">Nube 3D</button>
+      <button data-v="arbol" aria-selected="false">Arbol 3D</button>
+      <button data-v="res"  aria-selected="false">Resultados</button>
+    </nav>
+    <div class="crece"></div>
+    <button class="iconbtn" id="btn-ajustar" title="Encajar la parcela en la vista">Encajar</button>
+    <button class="iconbtn" id="btn-tema" title="Claro u oscuro">Tema</button>
+  </header>
+
+  <div id="cuerpo">
+    <aside id="izq"></aside>
+    <main id="lienzo-wrap">
+      <canvas id="lienzo"></canvas>
+      <div id="tip"></div>
+      <div id="escala"></div>
+      <div id="ayuda">arrastrar mueve, rueda acerca</div>
+      <div id="cargando">cargando datos...</div>
+    </main>
+    <aside class="der" id="der"></aside>
+  </div>
+</div>
+
+<script src="data/geo.js"></script>
+<script src="data/arboles.js"></script>
+<script src="data/nubes.js"></script>
+<script src="data/copas.js"></script>
+<script src="data/instancias.js"></script>
+<script>
+"use strict";
+// ===========================================================================
+// Visor de datos crudos y resultados del proyecto TreeLearn.
+// Tres fuentes: GEO (dosel y region), ARB (arboles, detecciones, parejas) y
+// NUB (nubes de puntos submuestreadas con la instancia predicha).
+// ===========================================================================
+
+const GEO = window.GEO || {}, ARB = window.ARB || {}, NUB = window.NUB || {},
+      COP = window.COP || {}, INS = window.INS || {};
+const METODOS = [
+  {k:"SAT",   nom:"SegmentAnyTree", corto:"SAT",   var:"--sat", nota:"sin entrenar"},
+  {k:"AMS3D", nom:"AMS3D",          corto:"AMS3D", var:"--ams", nota:"ajustado por parcela"},
+  {k:"FF3D",  nom:"ForestFormer3D",corto:"FF3D", var:"--ff3d",nota:"sin entrenar"},
+  {k:"TreeLite3D", nom:"TreeLite3D", corto:"TL3D", var:"--tl3d",
+   nota:"agrupamiento reajustado"},
+  {k:"WS",    nom:"Watershed CHM",  corto:"WS",    var:"--ws",  nota:"ajustado por parcela"},
+];
+const ESTRATOS = ["dominante","intermedio","suprimido"];
+const SITIOS = [
+  {k:"cham", nom:"Chamrousse", parcelas:["1","1b","2","3","3b","4","Premol"]},
+  {k:"pell", nom:"Pellizzano", parcelas:Array.from({length:15},(_,i)=>"p"+(i+1))},
+];
+
+const S = {
+  vista:"mapa",
+  key:"cham/1",
+  metodo:"SAT",
+  dmatch:"3.5",
+  otros:false,          // dibujar tambien los otros metodos, en pequeno
+  capas:{chm:true, puntos:true, copasDet:true, region:true, copas:true, lineas:true,
+         det:true, fuera:true},
+  estrato:"todos",
+  ordenPares:"iou",
+  recorte:"region",   // region inventariada o tile completo
+  ocultar:false,      // tecla h: dosel limpio, sin simbolos
+  sel:null,             // {tipo:"arbol"|"det", i:int}
+  resaltar:true,        // los puntos de lo seleccionado sobresalen, el resto se apaga
+  vw:{cx:0, cy:0, esc:4, auto:true},
+  nube:{rot:0.6, incl:0.30, zoom:1, color:"inst", pan:{x:0,y:0}, foco:null},
+};
+
+// ------------------------------------------------------------------ utilidades
+const $ = s => document.querySelector(s);
+const el = (t,p={},...h)=>{const n=document.createElement(t);
+  for(const [k,v] of Object.entries(p)){
+    if(k==="cls") n.className=v; else if(k==="txt") n.textContent=v;
+    else if(k.startsWith("on")) n.addEventListener(k.slice(2),v);
+    else if(v!==null&&v!==false) n.setAttribute(k,v===true?"":v);
+  }
+  for(const c of h.flat()) if(c!=null) n.append(c.nodeType?c:document.createTextNode(c));
+  return n;};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const n2 = v => (v==null||!isFinite(v)) ? "--" : v.toFixed(2);
+const n3 = v => (v==null||!isFinite(v)) ? "--" : v.toFixed(3);
+const pct = v => (v==null||!isFinite(v)) ? "--" : (100*v).toFixed(1)+"%";
+
+// Decodifica la nube una sola vez por parcela y la deja en coordenadas del mundo,
+// ordenada de menor a mayor altura para que al pintarla desde arriba las copas
+// queden encima del suelo.
+const cacheNube = new Map();
+function nube(key){
+  if(cacheNube.has(key)) return cacheNube.get(key);
+  const nb = NUB[key];
+  if(!nb){ cacheNube.set(key,null); return null; }
+  const esc = nb.escala||100, xi = d16(nb.x), yi = d16(nb.y), zi = d16(nb.z), ii = d16(nb.inst);
+  const n = xi.length, ord = Array.from({length:n},(_,i)=>i).sort((a,b)=>zi[a]-zi[b]);
+  const X = new Float64Array(n), Y = new Float64Array(n), Z = new Float32Array(n),
+        I = new Int16Array(n);
+  let zmin = Infinity, zmax = -Infinity;
+  for(let k=0;k<n;k++){
+    const i = ord[k];
+    X[k] = nb.origen[0] + xi[i]/esc;
+    Y[k] = nb.origen[1] + yi[i]/esc;
+    Z[k] = zi[i]/esc;
+    I[k] = ii[i];
+    if(Z[k]<zmin) zmin=Z[k]; if(Z[k]>zmax) zmax=Z[k];
+  }
+  const r = {n, X, Y, Z, I, zmin, zmax, meta:nb};
+  cacheNube.set(key, r);
+  return r;
+}
+
+function d16(b64){                     // base64 -> Int16Array little endian
+  const bin = atob(b64), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
+  for(let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
+  return new Int16Array(buf);
+}
+
+// Halo bajo los simbolos: sin el, sobre la nube de puntos los circulos de copa y
+// las marcas de deteccion se pierden.
+function halo(){
+  return document.documentElement.dataset.tema==="oscuro"
+    ? "rgba(10,11,13,0.75)" : "rgba(255,255,255,0.85)";
+}
+const cHaloG = halo;
+
+function colorAltura(z, zmin, zmax){
+  const t = Math.max(0, Math.min(1, (z-zmin)/Math.max(0.001, zmax-zmin)));
+  return `hsl(${(140-95*t).toFixed(0)} ${(35+40*t).toFixed(0)}% ${(24+46*t).toFixed(0)}%)`;
+}
+
+// Paleta ciclica para instancias, estable entre repintados.
+function colorInst(i){
+  if(i<=0) return "hsl(0 0% 55% / .35)";
+  const h = (i*137.508)%360;
+  return `hsl(${h.toFixed(0)} 62% ${document.documentElement.dataset.tema==="oscuro"?62:44}%)`;
+}
+
+// ------------------------------------------------------------------ derivados
+// Emparejamiento greedy uno a uno, la misma regla que el analisis: se toma el par
+// mas cercano admisible, se borran su fila y su columna, y se repite. Se rehace
+// aqui para poder contar tambien las detecciones de fuera de la region cuando el
+// usuario quita el recorte, sin tener que reexportar nada.
+function emparejarJS(dx, dy, rx, ry, dmax){
+  const nd = dx.length, nr = rx.length, pares = [];
+  if(!nd || !nr) return pares;
+  const usadoD = new Uint8Array(nd), usadoR = new Uint8Array(nr);
+  const cand = [];
+  for(let i=0;i<nd;i++) for(let j=0;j<nr;j++){
+    const d = Math.hypot(dx[i]-rx[j], dy[i]-ry[j]);
+    if(d <= dmax) cand.push([d,i,j]);
+  }
+  cand.sort((a,b)=>a[0]-b[0]);
+  for(const [,i,j] of cand){
+    if(usadoD[i] || usadoR[j]) continue;
+    usadoD[i]=1; usadoR[j]=1; pares.push([i,j]);
+  }
+  return pares;
+}
+
+const cacheDer = new Map();
+function derivar(){
+  const id = S.key+"|"+S.metodo+"|"+S.dmatch+"|"+S.recorte;
+  if(cacheDer.has(id)) return cacheDer.get(id);
+  const a = ARB[S.key];
+  const vacio = {pares:[], arbolOK:new Set(), detOK:new Set(),
+                 det:{x:[],y:[],h:[],area:[]}, nFuera:0};
+  if(!a){ cacheDer.set(id,vacio); return vacio; }
+  const dentro = (a.det||{})[S.metodo] || {x:[],y:[],h:[],area:[]};
+  const fuera  = (a.det_fuera||{})[S.metodo] || {x:[],y:[],h:[],area:[]};
+  let det, pares;
+  if(S.recorte === "region"){
+    det = dentro;
+    pares = (((a.pares||{})[S.metodo])||{})[S.dmatch] || [];
+  } else {
+    // Sin recorte: todo lo que produjo el metodo entra en el conteo.
+    det = {x:dentro.x.concat(fuera.x), y:dentro.y.concat(fuera.y),
+           h:dentro.h.concat(fuera.h), area:dentro.area.concat(fuera.area)};
+    pares = emparejarJS(det.x, det.y, a.inv.x, a.inv.y, parseFloat(S.dmatch));
+  }
+  let nGrandes = 0;
+  for(const ar of det.area) if(ar > AREA_MAX_COPA) nGrandes++;
+  const r = {pares, arbolOK:new Set(pares.map(p=>p[1])), detOK:new Set(pares.map(p=>p[0])),
+             det, nDentro:dentro.x.length, nFuera:fuera.x.length, nGrandes};
+  cacheDer.set(id, r);
+  return r;
+}
+
+// Cola de casos: los errores de la parcela y metodo activos, para recorrerlos.
+// Primero los arboles perdidos, de mayor a menor altura, y luego los falsos
+// positivos. Es el orden en el que un error se explica mejor.
+function casos(){
+  const a = ARB[S.key], d = derivar();
+  if(!a) return [];
+  const out = [];
+  for(let i=0;i<a.inv.x.length;i++){
+    if(d.arbolOK.has(i) || !visibleArbol(a,i)) continue;
+    out.push({tipo:"arbol", i, orden:-a.inv.h[i],
+              txt:`${n2(a.inv.h[i])} m · ${a.inv.estrato[i].slice(0,3)}`});
+  }
+  out.sort((x,y)=>x.orden-y.orden);
+  const fp = [];
+  for(let i=0;i<d.det.x.length;i++){
+    if(d.detOK.has(i)) continue;
+    fp.push({tipo:"det", i, orden:-d.det.h[i], txt:`${n2(d.det.h[i])} m`});
+  }
+  fp.sort((x,y)=>x.orden-y.orden);
+  return out.concat(fp);
+}
+
+function visibleArbol(a,i){
+  return S.estrato==="todos" || a.inv.estrato[i]===S.estrato;
+}
+
+// ------------------------------------------------------------------ instancias
+// Identificador de instancia de una deteccion de SegmentAnyTree. Solo ese metodo
+// asigna puntos a arboles, asi que solo el tiene esto.
+function instDeDeteccion(i, der){
+  const m = INS[S.key];
+  if(!m || S.metodo !== "SAT") return null;
+  const nD = der.nDentro==null ? der.det.x.length : der.nDentro;
+  const id = i < nD ? m.dentro[i] : m.fuera[i - nD];
+  return id==null ? null : id;
+}
+
+// Puntos que caen en el cilindro de copa de un arbol de campo. Es la MISMA regla que
+// define los estratos en analisis.py: radio equivalente al area medida, desde el 40 %
+// de la altura hasta la altura mas 2 m, y por encima de 1.5 m del suelo.
+// Ojo: esto NO es una segmentacion anotada. Es una envolvente construida a partir de
+// lo que se midio en campo, que es todo lo que hay.
+const cacheCil = new Map();
+function cilindroArbol(key, i){
+  const id = key+"|"+i;
+  if(cacheCil.has(id)) return cacheCil.get(id);
+  const nu = nube(key), a = ARB[key];
+  if(!nu || !a){ cacheCil.set(id,null); return null; }
+  const rad = Math.sqrt(Math.max(a.inv.area[i], 0.1)/Math.PI);
+  const base = 0.4*a.inv.h[i], techo = a.inv.h[i] + 2, r2 = rad*rad;
+  const cx = a.inv.x[i], cy = a.inv.y[i];
+  const m = new Uint8Array(nu.n);
+  let n = 0;
+  for(let k=0;k<nu.n;k++){
+    const z = nu.Z[k];
+    if(z < 1.5 || z < base || z > techo) continue;
+    const dx = nu.X[k]-cx, dy = nu.Y[k]-cy;
+    if(dx*dx + dy*dy <= r2){ m[k] = 1; n++; }
+  }
+  const r = {m, n, rad, base, techo};
+  cacheCil.set(id, r);
+  return r;
+}
+
+// Mascara de resaltado para la nube: 1 en los puntos de lo seleccionado.
+let cacheMasc = {id:null, val:null};
+function mascaraResalte(){
+  if(!S.sel || !S.resaltar) return null;
+  const der = derivar();
+  const id = [S.key, S.metodo, S.dmatch, S.recorte, S.sel.tipo, S.sel.i].join("|");
+  if(cacheMasc.id === id) return cacheMasc.val;
+  const nu = nube(S.key);
+  let val = null;
+  if(nu){
+    if(S.sel.tipo === "arbol"){
+      const c = cilindroArbol(S.key, S.sel.i);
+      val = c ? c.m : null;
+    } else {
+      const iid = instDeDeteccion(S.sel.i, der);
+      if(iid != null){
+        val = new Uint8Array(nu.n);
+        for(let k=0;k<nu.n;k++) if(nu.I[k] === iid) val[k] = 1;
+      }
+    }
+  }
+  cacheMasc = {id, val};
+  return val;
+}
+
+// ------------------------------------------------------------------ copas
+// La copa de una deteccion. SegmentAnyTree entrega instancias por punto, asi que su
+// copa es el casco convexo real de sus retornos. AMS3D y el watershed solo publican
+// un area, asi que hay que aproximarlos con el circulo equivalente. Es la misma
+// asimetria que se declara en el articulo, y aqui se ve.
+function circuloMundo(x, y, area, n){
+  const r = Math.sqrt(Math.max(area, 0.01)/Math.PI), out = [];
+  for(let k=0;k<(n||28);k++){
+    const t = 2*Math.PI*k/(n||28);
+    out.push([x + r*Math.cos(t), y + r*Math.sin(t)]);
+  }
+  return out;
+}
+
+function copaDeteccion(i, der){
+  if(der.det.area[i] > AREA_MAX_COPA) return null;
+  const c = COP[S.key];
+  if(S.metodo === "SAT" && c){
+    const nD = der.nDentro==null ? der.det.x.length : der.nDentro;
+    const lista = i < nD ? c.sat_dentro : c.sat_fuera;
+    const j = i < nD ? i : i - nD;
+    const v = lista && lista[j];
+    if(v && v.length >= 3)
+      return v.map(([dx,dy]) => [der.det.x[i] + dx/10, der.det.y[i] + dy/10]);
+  }
+  return circuloMundo(der.det.x[i], der.det.y[i], der.det.area[i]);
+}
+
+// Seis arboles de Chamrousse traen area 0 en el inventario, asi que su poligono de
+// cuatro radios sale colapsado en un punto. Tener 24 vertices no basta para darlo por
+// bueno: hay que mirar que tenga extension de verdad.
+function poligonoUtil(v){
+  if(!v || v.length < 3) return false;
+  let m = 0;
+  for(const [dx,dy] of v) m = Math.max(m, Math.abs(dx), Math.abs(dy));
+  return m > 0;
+}
+
+function copaInventario(a, i){
+  const c = COP[S.key];
+  const v = c && c.inv && c.inv[i];
+  if(poligonoUtil(v))
+    return v.map(([dx,dy]) => [a.inv.x[i] + dx/10, a.inv.y[i] + dy/10]);
+  return null;                    // sin los cuatro radios se dibuja el circulo de siempre
+}
+
+// Unas pocas instancias de SegmentAnyTree fuera de la region se extienden decenas de
+// metros. Son reales, pero dibujadas como copa taparian la parcela entera, asi que se
+// dejan fuera del trazo y se dice cuantas.
+const AREA_MAX_COPA = 150;
+
+function trazar(poly){
+  ctx.beginPath();
+  poly.forEach(([x,y],k)=> k?ctx.lineTo(sx(x),sy(y)):ctx.moveTo(sx(x),sy(y)));
+  ctx.closePath();
+}
+
+// ------------------------------------------------------------------ imagenes
+// El CHM llega en escala de grises. Pintarlo tal cual tapa los simbolos, asi que se
+// pasa por una rampa estrecha y poco saturada: sigue leyendose el relieve del dosel
+// pero deja sitio a los circulos de copa y a las marcas de deteccion.
+const RAMPA = {
+  claro:  [[198,201,192],[252,251,247]],
+  oscuro: [[32,37,40],[104,113,107]],
+};
+const imgs = new Map();     // key -> Image cruda
+const tenidos = new Map();  // key|tema -> canvas ya coloreado
+
+function chmImg(key){
+  if(imgs.has(key)) return imgs.get(key);
+  const g = GEO[key];
+  if(!g || !g.chm_png){ imgs.set(key,null); return null; }
+  const im = new Image();
+  im.onload = ()=>{ tenidos.delete(key+"|claro"); tenidos.delete(key+"|oscuro"); pintar(); };
+  im.src = g.chm_png;
+  imgs.set(key, im);
+  return im;
+}
+
+function chmTenido(key){
+  const tema = document.documentElement.dataset.tema==="oscuro" ? "oscuro" : "claro";
+  const id = key+"|"+tema;
+  if(tenidos.has(id)) return tenidos.get(id);
+  const im = chmImg(key);
+  if(!im || !im.complete || !im.naturalWidth) return null;
+  const c = document.createElement("canvas");
+  c.width = im.naturalWidth; c.height = im.naturalHeight;
+  const k = c.getContext("2d", {willReadFrequently:true});
+  k.drawImage(im,0,0);
+  const d = k.getImageData(0,0,c.width,c.height), px = d.data;
+  const [lo,hi] = RAMPA[tema];
+  for(let i=0;i<px.length;i+=4){
+    const t = px[i]/255;
+    px[i]   = lo[0] + (hi[0]-lo[0])*t;
+    px[i+1] = lo[1] + (hi[1]-lo[1])*t;
+    px[i+2] = lo[2] + (hi[2]-lo[2])*t;
+  }
+  k.putImageData(d,0,0);
+  tenidos.set(id,c);
+  return c;
+}
+
+// ------------------------------------------------------------------ lienzo
+const cv = $("#lienzo"), ctx = cv.getContext("2d");
+let W=0, H=0, DPR=1;
+function medir(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  const r = cv.parentElement.getBoundingClientRect();
+  W = Math.max(1,Math.round(r.width)); H = Math.max(1,Math.round(r.height));
+  cv.width = W*DPR; cv.height = H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(S.vw.auto) encajar();
+}
+const sx = wx => (wx - S.vw.cx)*S.vw.esc + W/2;
+const sy = wy => H/2 - (wy - S.vw.cy)*S.vw.esc;
+const wx_ = px => (px - W/2)/S.vw.esc + S.vw.cx;
+const wy_ = py => (H/2 - py)/S.vw.esc + S.vw.cy;
+
+function encajar(){
+  const g = GEO[S.key], a = ARB[S.key];
+  let x0,y0,x1,y1;
+  if(g && g.chm_extent){ [x0,y0,x1,y1] = g.chm_extent; }
+  else if(a){ x0=Math.min(...a.inv.x); x1=Math.max(...a.inv.x);
+              y0=Math.min(...a.inv.y); y1=Math.max(...a.inv.y); }
+  else return;
+  S.vw.cx = (x0+x1)/2; S.vw.cy = (y0+y1)/2;
+  S.vw.esc = Math.max(0.4, 0.92*Math.min(W/Math.max(1,x1-x0), H/Math.max(1,y1-y0)));
+}
+
+// ------------------------------------------------------------------ mapa 2D
+function pintarMapa(){
+  const g = GEO[S.key], a = ARB[S.key], d = derivar();
+  ctx.clearRect(0,0,W,H);
+
+  // 1. dosel
+  if(S.capas.chm && g && g.chm_extent){
+    const im = chmTenido(S.key);
+    if(im){
+      const [x0,y0,x1,y1] = g.chm_extent;
+      ctx.save(); ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(im, sx(x0), sy(y1), (x1-x0)*S.vw.esc, (y1-y0)*S.vw.esc);
+      ctx.restore();
+    }
+  }
+  // 1b. la nube vista desde arriba, coloreada por la instancia que predijo el
+  //     modelo, para ver la copa segmentada de verdad y no solo un circulo
+  if(S.capas.puntos){
+    const nu = nube(S.key);
+    if(nu){
+      const r = Math.max(1, Math.min(5, S.vw.esc*0.34));
+      const porInst = S.nube.color==="inst";
+      const masc = mascaraResalte();
+      const paso = Math.max(1, Math.ceil(nu.n/18000));   // el mapa no necesita todos
+      ctx.save();
+      // Dos pasadas: primero el fondo apagado, luego lo resaltado, para que sobresalga.
+      for(const fase of (masc ? [0,1] : [1])){
+        let ultimo = -99999;
+        ctx.globalAlpha = masc ? (fase ? 1 : 0.22) : (S.capas.chm ? 0.82 : 1);
+        const rr = masc && fase ? r+1.4 : r;
+        for(let i=0;i<nu.n;i+=(masc && fase ? 1 : paso)){
+          if(masc && (masc[i]?0:1) === fase) continue;
+          const px = sx(nu.X[i]), py = sy(nu.Y[i]);
+          if(px<-4||px>W+4||py<-4||py>H+4) continue;
+          if(porInst){
+            if(nu.I[i]!==ultimo){ ctx.fillStyle = colorInst(nu.I[i]); ultimo = nu.I[i]; }
+          } else {
+            ctx.fillStyle = colorAltura(nu.Z[i], nu.zmin, nu.zmax);
+          }
+          ctx.fillRect(px-rr/2, py-rr/2, rr, rr);
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  // 1c. copas de las detecciones del metodo activo, vistas desde arriba
+  if(S.capas.copasDet && a){
+    const der = derivar(), col = cssv(METODOS.find(m=>m.k===S.metodo).var);
+    // Sin relleno: con decenas de copas superpuestas los rellenos se suman y el mapa
+    // se vuelve una mancha. Trazo discontinuo para separarlas de las copas de campo,
+    // que van en continuo.
+    ctx.save();
+    for(let i=0;i<der.det.x.length;i++){
+      const pol = copaDeteccion(i, der);
+      if(!pol) continue;
+      trazar(pol);
+      if(S.capas.puntos){
+        ctx.setLineDash([]); ctx.strokeStyle = cHaloG(); ctx.lineWidth = 2.6; ctx.stroke();
+      }
+      ctx.setLineDash([4,3]);
+      ctx.strokeStyle = col; ctx.lineWidth = 1.3;
+      ctx.globalAlpha = der.detOK.has(i) ? 1 : .45;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
+  // 2. region inventariada
+  if(S.capas.region && g && g.region && g.region.length>2){
+    ctx.save();
+    ctx.beginPath();
+    g.region.forEach(([x,y],i)=> i?ctx.lineTo(sx(x),sy(y)):ctx.moveTo(sx(x),sy(y)));
+    ctx.closePath();
+    ctx.fillStyle = cssv("--acento")+"14";
+    ctx.fill();
+    ctx.setLineDash([6,4]); ctx.lineWidth = 1.4;
+    ctx.strokeStyle = cssv("--acento"); ctx.globalAlpha=.75; ctx.stroke();
+    ctx.restore();
+  }
+  if(!a || S.ocultar){ dibujarEscala(); return; }
+
+  // 3. copas del inventario, coloreadas segun si el metodo activo las encontro
+  if(S.capas.copas){
+    const cOK = cssv("--ok"), cNo = cssv("--fallo"), cHalo = halo();
+    for(let i=0;i<a.inv.x.length;i++){
+      if(!visibleArbol(a,i)) continue;
+      const hit = d.arbolOK.has(i);
+      const X = sx(a.inv.x[i]), Y = sy(a.inv.y[i]), R = Math.max(2, a.inv.r[i]*S.vw.esc);
+      const lw = a.inv.estrato[i]==="dominante" ? 1.7
+               : a.inv.estrato[i]==="intermedio" ? 1.1 : .7;
+      const pol = copaInventario(a, i);
+      const sinCopa = !(a.inv.r[i] > 0) && !pol;
+      if(pol) trazar(pol);
+      else if(sinCopa){       // radio medido nulo: marca de tamano fijo, no es una copa
+        ctx.setLineDash([2,2]); ctx.beginPath(); ctx.arc(X,Y,6,0,6.2832);
+      } else { ctx.beginPath(); ctx.arc(X,Y,R,0,6.2832); }
+      if(!S.capas.puntos){ ctx.fillStyle = (hit?cOK:cNo)+"1f"; ctx.fill(); }
+      if(S.capas.puntos){ ctx.lineWidth = lw+2.2; ctx.strokeStyle = cHalo; ctx.stroke(); }
+      ctx.lineWidth = lw;
+      ctx.strokeStyle = hit?cOK:cNo; ctx.globalAlpha = hit?.9:1; ctx.stroke();
+      ctx.globalAlpha = 1; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(X,Y,2.1,0,6.2832);
+      ctx.fillStyle = cHalo; ctx.fill();
+      ctx.beginPath(); ctx.arc(X,Y,1.4,0,6.2832);
+      ctx.fillStyle = hit?cOK:cNo; ctx.fill();
+    }
+  }
+  // 4. lineas de emparejamiento
+  if(S.capas.lineas && d.pares.length){
+    ctx.save();
+    ctx.beginPath();
+    for(const [di,ri] of d.pares){
+      if(!visibleArbol(a,ri)) continue;
+      ctx.moveTo(sx(d.det.x[di]), sy(d.det.y[di]));
+      ctx.lineTo(sx(a.inv.x[ri]),  sy(a.inv.y[ri]));
+    }
+    if(S.capas.puntos){ ctx.strokeStyle = halo(); ctx.lineWidth = 2.6; ctx.stroke(); }
+    ctx.strokeStyle = cssv("--texto"); ctx.globalAlpha = S.capas.puntos?.75:.32;
+    ctx.lineWidth = .9; ctx.stroke(); ctx.restore();
+  }
+  // 5. otros metodos, marcas pequenas de fondo
+  if(S.otros){
+    for(const m of METODOS){
+      if(m.k===S.metodo) continue;
+      const dd = (a.det||{})[m.k]; if(!dd) continue;
+      ctx.save(); ctx.globalAlpha=.5; ctx.fillStyle = cssv(m.var);
+      for(let i=0;i<dd.x.length;i++){
+        ctx.beginPath(); ctx.arc(sx(dd.x[i]), sy(dd.y[i]), 1.7, 0, 6.2832); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+  // 6b. detecciones que caen fuera de la region: no cuentan ni a favor ni en contra,
+  //     y son la evidencia visible de que el inventario cubre solo un tercio del tile
+  if(S.capas.fuera && a.det_fuera && a.det_fuera[S.metodo]){
+    const df = a.det_fuera[S.metodo];
+    ctx.save();
+    for(let i=0;i<df.x.length;i++){
+      const X=sx(df.x[i]), Y=sy(df.y[i]);
+      ctx.beginPath(); ctx.arc(X,Y,2.6,0,6.2832);
+      if(S.capas.puntos){ ctx.strokeStyle=halo(); ctx.lineWidth=2.6; ctx.stroke(); }
+      ctx.strokeStyle=cssv("--suave"); ctx.lineWidth=1;
+      ctx.globalAlpha = S.capas.puntos?.9:.55; ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // 6. detecciones del metodo activo
+  if(S.capas.det){
+    const col = cssv(METODOS.find(m=>m.k===S.metodo).var), cFP = cssv("--fp"), cHalo = halo();
+    for(let i=0;i<d.det.x.length;i++){
+      const ok = d.detOK.has(i);
+      const X = sx(d.det.x[i]), Y = sy(d.det.y[i]), s = ok?3.4:4.2;
+      ctx.beginPath();
+      if(ok){
+        ctx.moveTo(X,Y-s); ctx.lineTo(X+s,Y); ctx.lineTo(X,Y+s); ctx.lineTo(X-s,Y); ctx.closePath();
+        ctx.fillStyle = col; ctx.fill();
+        ctx.strokeStyle = cHalo; ctx.lineWidth = 1.2; ctx.stroke();
+      } else {
+        ctx.moveTo(X-s,Y-s); ctx.lineTo(X+s,Y+s); ctx.moveTo(X+s,Y-s); ctx.lineTo(X-s,Y+s);
+        ctx.strokeStyle = cHalo; ctx.lineWidth = 3.4; ctx.stroke();
+        ctx.strokeStyle = cFP; ctx.lineWidth = 1.8; ctx.stroke();
+      }
+    }
+  }
+  // 7. seleccion
+  if(S.sel){
+    let X,Y,R=11;
+    if(S.sel.tipo==="arbol" && S.sel.i<a.inv.x.length){
+      X=sx(a.inv.x[S.sel.i]); Y=sy(a.inv.y[S.sel.i]);
+      R=Math.max(11, a.inv.r[S.sel.i]*S.vw.esc+5);
+    } else if(S.sel.tipo==="det" && S.sel.i<d.det.x.length){
+      X=sx(d.det.x[S.sel.i]); Y=sy(d.det.y[S.sel.i]);
+    } else { X=null; }
+    if(X!=null){
+      ctx.save(); ctx.strokeStyle=cssv("--sel"); ctx.lineWidth=2; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.arc(X,Y,R,0,6.2832); ctx.stroke(); ctx.restore();
+    }
+  }
+  dibujarEscala();
+}
+
+function dibujarEscala(){
+  const objetivo = 90;                       // pixeles aproximados
+  const pasos = [1,2,5,10,20,25,50,100,200];
+  let m = pasos.find(p=>p*S.vw.esc>=objetivo) || 200;
+  $("#escala").textContent = `${m} m`;
+  $("#escala").style.width = (m*S.vw.esc)+"px";
+}
+
+// ------------------------------------------------------------------ arbol 3D
+// Compara, punto a punto, la instancia que predijo el modelo con el cilindro de copa
+// que se deduce de lo medido en campo. El cilindro NO es una anotacion: es la unica
+// referencia disponible, y solo sirve para inspeccionar, no para medir delineacion.
+const cachePar = new Map();
+
+function comparacionArbol(){
+  const der = derivar();
+  if(!ARB[S.key] || !S.sel) return null;
+  let ia = null, idet = null;
+  if(S.sel.tipo === "arbol"){
+    ia = S.sel.i;
+    const par = der.pares.find(p => p[1] === ia);
+    idet = par ? par[0] : null;
+  } else {
+    idet = S.sel.i;
+    const par = der.pares.find(p => p[0] === idet);
+    ia = par ? par[1] : null;
+  }
+  if(ia == null) return {sinPar:true, ia, idet};
+  return compararPar(ia, idet);
+}
+
+function compararPar(ia, idet){
+  const a = ARB[S.key], der = derivar();
+  const id = [S.key, S.metodo, S.dmatch, S.recorte, ia, idet].join("|");
+  if(cachePar.has(id)) return cachePar.get(id);
+
+  const nu = nube(S.key), cil = cilindroArbol(S.key, ia);
+  if(!nu || !cil) return null;
+  const iid = idet==null ? null : instDeDeteccion(idet, der);
+  const rad = cil.rad, cx = a.inv.x[ia], cy = a.inv.y[ia];
+  const alcance = Math.max(rad + 4, 8), a2 = alcance*alcance;
+
+  // clase: 0 contexto, 1 solo referencia, 2 solo prediccion, 3 en los dos
+  const idx = [], cls = [];
+  let nRef = 0, nPred = 0, nAmbos = 0;
+  for(let k=0;k<nu.n;k++){
+    const dx = nu.X[k]-cx, dy = nu.Y[k]-cy;
+    if(dx*dx + dy*dy > a2) continue;
+    const enRef = cil.m[k] === 1;
+    const enPred = iid != null && nu.I[k] === iid;
+    if(enRef) nRef++;
+    if(enPred) nPred++;
+    if(enRef && enPred) nAmbos++;
+    idx.push(k);
+    cls.push(enRef && enPred ? 3 : enPred ? 2 : enRef ? 1 : 0);
+  }
+  // Extension de lo que de verdad se compara, para encuadrar la camara sin cortar.
+  let maxR = 1, zMin = Infinity, zMax = -Infinity;
+  for(let j=0;j<idx.length;j++){
+    if(!cls[j]) continue;
+    const k2 = idx[j], dx = nu.X[k2]-cx, dy = nu.Y[k2]-cy;
+    maxR = Math.max(maxR, Math.hypot(dx,dy));
+    if(nu.Z[k2] < zMin) zMin = nu.Z[k2];
+    if(nu.Z[k2] > zMax) zMax = nu.Z[k2];
+  }
+  if(!isFinite(zMin)){ zMin = 0; zMax = a.inv.h[ia]; }
+  const union = nRef + nPred - nAmbos;
+  const r = {ia, idet, iid, idx, cls, nRef, nPred, nAmbos,
+             iou: union ? nAmbos/union : 0,
+             recallPts: nRef ? nAmbos/nRef : 0,
+             precPts: nPred ? nAmbos/nPred : 0,
+             cx, cy, rad, hRef: a.inv.h[ia], maxR, zMin, zMax};
+  cachePar.set(id, r);
+  return r;
+}
+
+// Todos los pares emparejados de la parcela, con su IoU. Se calcula una vez por
+// parcela y metodo; en la parcela mas grande son unas decimas de segundo.
+const cacheLista = new Map();
+function listaPares(){
+  const id = [S.key, S.metodo, S.dmatch, S.recorte].join("|");
+  if(cacheLista.has(id)) return cacheLista.get(id);
+  const a = ARB[S.key], der = derivar();
+  const out = [];
+  if(a && S.metodo === "SAT"){
+    for(const [idet, ia] of der.pares){
+      const c = compararPar(ia, idet);
+      out.push({ia, idet, iou: c ? c.iou : 0, nRef: c ? c.nRef : 0,
+                h: a.inv.h[ia], dh: der.det.h[idet] - a.inv.h[ia],
+                estrato: a.inv.estrato[ia],
+                specie: (a.inv.specie || [])[ia] || "?"});
+    }
+  }
+  cacheLista.set(id, out);
+  return out;
+}
+
+// Por debajo de este numero de puntos en el cilindro, el IoU no significa nada: la
+// referencia es demasiado pobre, casi siempre porque el arbol esta suprimido o porque
+// el inventario le dio area cero.
+const MIN_REF = 30;
+
+const CLS_COL = {0:"--linea", 1:"--fallo", 2:"--fp", 3:"--ok"};
+const CLS_NOM = {1:"solo en la referencia de campo", 2:"solo en la instancia predicha",
+                 3:"en las dos", 0:"contexto, ni una ni otra"};
+
+function pintarArbol(){
+  ctx.clearRect(0,0,W,H);
+  const cen = (t,y)=>{ ctx.fillStyle=cssv("--suave"); ctx.font="13px sans-serif";
+                       ctx.textAlign="center"; ctx.fillText(t, W/2, y||H/2); };
+  if(S.metodo !== "SAT"){
+    cen("Solo SegmentAnyTree asigna puntos a arboles.", H/2-10);
+    cen(`${S.metodo} publica una posicion y un area, asi que no hay nada que comparar punto a punto.`, H/2+12);
+    return;
+  }
+  const c = comparacionArbol();
+  if(!c){ cen("Elige un arbol emparejado en el mapa, o pulsa n para recorrerlos."); return; }
+  if(c.sinPar){ cen("Ese elemento no tiene pareja a esta distancia de emparejamiento."); return; }
+  const nu = nube(S.key);
+
+  const ca=Math.cos(S.nube.rot), sa=Math.sin(S.nube.rot);
+  const ci=Math.cos(S.nube.incl), si=Math.sin(S.nube.incl);
+  const mz = (c.zMin + c.zMax)/2;
+  const anchoM = 2*c.maxR*1.15, altoM = Math.max(2, c.zMax - c.zMin)*1.15;
+  const k = Math.min(W/anchoM, H/altoM) * 0.92 * S.nube.zoom;
+
+  const P = c.idx.map((p,j)=>{
+    const x = nu.X[p]-c.cx, y = nu.Y[p]-c.cy, z = nu.Z[p]-mz;
+    const xr = x*ca - y*sa, yr = x*sa + y*ca;
+    return [W/2 + xr*k + S.nube.pan.x, H/2 - (z*ci - yr*si)*k + S.nube.pan.y,
+            yr*ci + z*si, c.cls[j]];
+  }).sort((u,v)=>u[2]-v[2]);
+
+  for(const [px,py,,cl] of P){
+    if(px<-5||px>W+5||py<-5||py>H+5) continue;
+    const r = cl===0 ? 1.8 : 3.4;
+    ctx.globalAlpha = cl===0 ? 0.42 : 1;
+    ctx.fillStyle = cssv(CLS_COL[cl]);
+    ctx.fillRect(px-r/2, py-r/2, r, r);
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = cssv("--suave"); ctx.font="11px sans-serif"; ctx.textAlign="left";
+  ctx.fillText(`arbol ${c.ia} y deteccion ${c.idet} (instancia ${c.iid}) · `+
+    `${c.nRef} puntos en el cilindro de campo, ${c.nPred} en la instancia, ${c.nAmbos} en los dos`, 12, 20);
+  ctx.fillText("la referencia es un cilindro deducido de los radios medidos, no una segmentacion anotada", 12, 36);
+
+  // Regla vertical de 5 m, para no perder la nocion de tamano al girar.
+  const ci2 = Math.cos(S.nube.incl);
+  const px5 = 5*k*ci2;
+  if(px5 > 20 && px5 < H*0.8){
+    const x0 = W-40, y0 = H-40;
+    ctx.strokeStyle = cssv("--suave"); ctx.lineWidth = 1; ctx.globalAlpha = .8;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y0-px5);
+    ctx.moveTo(x0-4, y0); ctx.lineTo(x0+4, y0);
+    ctx.moveTo(x0-4, y0-px5); ctx.lineTo(x0+4, y0-px5); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText("5 m", x0-7, y0-px5/2+4);
+    ctx.globalAlpha = 1; ctx.textAlign = "left";
+  }
+}
+
+// ------------------------------------------------------------------ nube 3D
+// Camaras fijas. La cenital es la misma vista de arriba del mapa, pero con los
+// puntos solos y sin nada dibujado encima.
+const CAMARAS = {
+  cenital:  {rot:0.00, incl:1.5708, nom:"cenital"},
+  oblicua:  {rot:0.60, incl:0.7000, nom:"oblicua"},
+  lateral:  {rot:0.60, incl:0.1200, nom:"lateral"},
+};
+
+// La proyeccion se guarda en cache: girar es lo unico que obliga a recalcularla, y
+// asi el resaltado al pasar el raton no vuelve a ordenar 40000 puntos en cada frame.
+let proyNube = {id:null};
+function proyectarNube(nu){
+  const id = [S.key, S.nube.rot.toFixed(4), S.nube.incl.toFixed(4), S.nube.zoom.toFixed(4),
+              Math.round(S.nube.pan.x), Math.round(S.nube.pan.y), W, H].join("|");
+  if(proyNube.id === id) return proyNube;
+  const n = nu.n;
+  let mx=0, my=0, mz=0;
+  for(let i=0;i<n;i++){ mx+=nu.X[i]; my+=nu.Y[i]; mz+=nu.Z[i]; }
+  mx/=n; my/=n; mz/=n;
+  const ca=Math.cos(S.nube.rot), sa=Math.sin(S.nube.rot);
+  const ci=Math.cos(S.nube.incl), si=Math.sin(S.nube.incl);
+  let ext=1;
+  for(let i=0;i<n;i+=17) ext=Math.max(ext, Math.abs(nu.X[i]-mx), Math.abs(nu.Y[i]-my));
+  const k = 0.42*Math.min(W,H)/ext * S.nube.zoom;
+  const px = new Float32Array(n), py = new Float32Array(n), pz = new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const x=nu.X[i]-mx, y=nu.Y[i]-my, z=nu.Z[i]-mz;
+    const xr = x*ca - y*sa, yr = x*sa + y*ca;
+    px[i] = W/2 + xr*k + S.nube.pan.x;
+    py[i] = H/2 - (z*ci - yr*si)*k + S.nube.pan.y;
+    pz[i] = yr*ci + z*si;
+  }
+  const ord = Array.from({length:n},(_,i)=>i).sort((a,b)=>pz[a]-pz[b]);
+  proyNube = {id, px, py, pz, ord, k};
+  return proyNube;
+}
+
+// Instancia que hay bajo el cursor. Entre los puntos cercanos gana el que este mas
+// cerca de la camara, que es el que se ve encima.
+function instBajoCursor(mx, my){
+  const nu = nube(S.key);
+  if(!nu) return null;
+  const P = proyectarNube(nu);
+  let mejor = -1, mejorZ = -Infinity;
+  for(let i=0;i<nu.n;i++){
+    const dx = P.px[i]-mx, dy = P.py[i]-my;
+    if(dx*dx + dy*dy > 49) continue;
+    if(P.pz[i] > mejorZ){ mejorZ = P.pz[i]; mejor = i; }
+  }
+  return mejor >= 0 ? nu.I[mejor] : null;
+}
+
+// Indice de deteccion que corresponde a una instancia, para poder seleccionarla
+// pulsando sobre sus puntos.
+function detDeInstancia(iid){
+  const m = INS[S.key];
+  if(!m || iid == null || iid <= 0) return null;
+  let j = m.dentro.indexOf(iid);
+  if(j >= 0) return j;
+  j = m.fuera.indexOf(iid);
+  if(j >= 0 && S.recorte === "tile") return m.dentro.length + j;
+  return null;
+}
+
+// La instancia que manda ahora mismo: la del raton si hay, si no la seleccionada.
+function focoInstancia(){
+  if(S.nube.foco != null) return S.nube.foco;
+  if(S.sel && S.sel.tipo === "det" && S.metodo === "SAT")
+    return instDeDeteccion(S.sel.i, derivar());
+  return null;
+}
+
+function pintarNube(){
+  ctx.clearRect(0,0,W,H);
+  const nu = nube(S.key);
+  if(!nu){ ctx.fillStyle=cssv("--suave"); ctx.font="13px sans-serif"; ctx.textAlign="center";
+           ctx.fillText("no hay nube exportada para esta parcela", W/2, H/2); return; }
+  const {n, Z, I, zmin, zmax, meta} = nu;
+  const P = proyectarNube(nu);
+  const r = Math.max(1.6, 2.2*Math.sqrt(S.nube.zoom));
+  const porInst = S.nube.color==="inst";
+  const foco = S.resaltar ? focoInstancia() : null;
+  let ultimo = -99999, nFoco = 0;
+
+  for(const i of P.ord){
+    if(P.px[i]<-5||P.px[i]>W+5||P.py[i]<-5||P.py[i]>H+5) continue;
+    const dentro = foco != null && I[i] === foco;
+    if(dentro) nFoco++;
+    ctx.globalAlpha = foco == null ? 1 : (dentro ? 1 : 0.13);
+    if(dentro){
+      ctx.fillStyle = colorInst(I[i]); ultimo = -99999;
+    } else if(porInst){
+      if(I[i]!==ultimo){ ctx.fillStyle = colorInst(I[i]); ultimo = I[i]; }
+    } else {
+      ctx.fillStyle = colorAltura(Z[i], zmin, zmax);
+    }
+    const rr = dentro ? r+1.6 : r;
+    ctx.fillRect(P.px[i]-rr/2, P.py[i]-rr/2, rr, rr);
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = cssv("--suave"); ctx.font="11px sans-serif"; ctx.textAlign="left";
+  ctx.fillText(`${n.toLocaleString("es")} de ${meta.n_original.toLocaleString("es")} puntos. `+
+    `Se ven ${meta.n_inst} de las ${meta.n_inst_total||meta.n_inst} instancias que predijo `+
+    `SegmentAnyTree; el submuestreo pierde las mas pequenas. No coincide con el conteo `+
+    `de detecciones, que ademas exige 10 puntos y estar dentro de la region. Color por `+
+    `${porInst?"instancia":"altura"}.`, 12, 20);
+  if(foco != null){
+    const d = detDeInstancia(foco);
+    ctx.fillStyle = cssv("--texto");
+    ctx.fillText(`instancia ${foco}: ${nFoco} puntos en el submuestreo` +
+      (d != null ? `, deteccion ${d}` : ", fuera de la region evaluada") +
+      ". Pulsa para fijarla.", 12, 36);
+  }
+}
+
+function pintar(){
+  if(S.vista==="nube") pintarNube();
+  else if(S.vista==="arbol") pintarArbol();
+  else if(S.vista==="mapa") pintarMapa();
+}
+
+// ------------------------------------------------------------------ agregados
+// El bootstrap se recalcula aqui, remuestreando parcelas, para que los intervalos
+// respondan a la distancia de emparejamiento que elija el usuario. La semilla es
+// fija, asi que el resultado es estable, pero no coincide al ultimo decimal con
+// el del articulo, que usa el generador de numpy.
+function rnd(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
+  let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function metParcela(key, met, d, recorte){
+  const a = ARB[key]; if(!a) return null;
+  const m = ((a.met||{})[met]||{})[d];
+  if(!m) return null;
+  if((recorte||S.recorte) === "region") return m;
+  // Sin recorte: las detecciones de fuera pasan a contar, y hay que reemparejar
+  // porque alguna de ellas puede caer a menos de dmax de un arbol del borde.
+  const guarda = S.key, guardaM = S.metodo, guardaD = S.dmatch, guardaR = S.recorte;
+  S.key = key; S.metodo = met; S.dmatch = d; S.recorte = "tile";
+  const der = derivar();
+  S.key = guarda; S.metodo = guardaM; S.dmatch = guardaD; S.recorte = guardaR;
+  const TP = der.pares.length, ND = der.det.x.length, NR = m.NR;
+  const R = NR?TP/NR:0, P = ND?TP/ND:0;
+  return {TP, ND, NR, recall:+R.toFixed(3), precision:+P.toFixed(3),
+          f1:+((P+R)?2*P*R/(P+R):0).toFixed(3)};
+}
+function agregado(sitio, met, d, nboot=2000){
+  const ps = SITIOS.find(s=>s.k===sitio).parcelas.map(p=>metParcela(sitio+"/"+p, met, d)).filter(Boolean);
+  if(!ps.length) return null;
+  const S_=(f)=>ps.reduce((s,m)=>s+m[f],0);
+  const TP=S_("TP"), ND=S_("ND"), NR=S_("NR");
+  const R=NR?TP/NR:0, P=ND?TP/ND:0, F=(P+R)?2*P*R/(P+R):0;
+  const rr=rnd(20260905), Rs=[];
+  for(let b=0;b<nboot;b++){
+    let tp=0,nd=0,nr=0;
+    for(let i=0;i<ps.length;i++){ const j=Math.floor(rr()*ps.length);
+      tp+=ps[j].TP; nd+=ps[j].ND; nr+=ps[j].NR; }
+    Rs.push(nr?tp/nr:0);
+  }
+  Rs.sort((a,b)=>a-b);
+  const q=(p)=>Rs[Math.min(Rs.length-1,Math.floor(p*Rs.length))];
+  return {TP,ND,NR,recall:R,precision:P,f1:F,ic:[q(.025),q(.975)],nparc:ps.length};
+}
+function agregadoEstrato(sitio, met, d){
+  const out = {}; ESTRATOS.forEach(e=>out[e]={n:0,tp:0});
+  for(const p of SITIOS.find(s=>s.k===sitio).parcelas){
+    const key=sitio+"/"+p, a=ARB[key]; if(!a) continue;
+    const pares = (((a.pares||{})[met])||{})[d] || [];
+    const ok = new Set(pares.map(x=>x[1]));
+    for(let i=0;i<a.inv.estrato.length;i++){
+      const e=a.inv.estrato[i]; if(!out[e]) continue;
+      out[e].n++; if(ok.has(i)) out[e].tp++;
+    }
+  }
+  return out;
+}
+
+// ------------------------------------------------------------------ paneles
+function panelIzq(){
+  const c = $("#izq"); c.textContent="";
+  // parcelas
+  const gp = el("div",{cls:"grupo"}, el("h2",{txt:"Parcelas"}));
+  for(const st of SITIOS){
+    gp.append(el("div",{cls:"sitio",txt:st.nom}));
+    for(const p of st.parcelas){
+      const key = st.k+"/"+p;
+      const m = metParcela(key, S.metodo, S.dmatch);
+      const r = m ? m.recall : 0;
+      gp.append(el("div",{cls:"parcela","aria-current":String(key===S.key),
+          title:m?`exhaustividad ${n3(r)} · ${m.TP} de ${m.NR}`:"sin datos",
+          onclick:()=>{S.key=key; S.sel=null; S.vw.auto=true; encajar(); render();}},
+        el("span",{cls:"nom",txt:p}),
+        el("span",{cls:"barra"}, el("i",{style:`width:${(100*r).toFixed(0)}%`}))));
+    }
+  }
+  c.append(gp);
+
+  // pares emparejados, para la vista de arbol
+  if(S.vista==="arbol"){
+    const g = el("div",{cls:"grupo"});
+    if(S.metodo !== "SAT"){
+      g.append(el("h2",{txt:"Pares"}),
+        el("div",{cls:"nota"},
+          `${S.metodo} no asigna puntos a arboles. Cambia a SegmentAnyTree para comparar.`));
+    } else {
+      const L = listaPares().slice();
+      const ord = {iou:(x,y)=>x.iou-y.iou, altura:(x,y)=>y.h-x.h, indice:(x,y)=>x.ia-y.ia};
+      L.sort(ord[S.ordenPares] || ord.iou);
+      g.append(el("h2",{txt:`Pares emparejados (${L.length})`}),
+        el("div",{cls:"seg"}, ["iou","altura","indice"].map(k=>
+          el("button",{"aria-pressed":String(S.ordenPares===k),txt:k,
+            onclick:()=>{S.ordenPares=k; panelIzq();}}))),
+        el("div",{cls:"nota",style:"margin:5px 0"},
+          S.ordenPares==="iou" ? "de peor a mejor solape, para ir directo a los casos malos"
+                               : "pulsa una fila, o usa n y p"));
+      const lista = el("div",{style:"max-height:340px;overflow-y:auto;margin:0 -4px"});
+      for(const k of L){
+        const act = S.sel && S.sel.tipo==="arbol" && S.sel.i===k.ia;
+        const pobre = k.nRef < MIN_REF;
+        const col = pobre ? "--suave" : k.iou < 0.25 ? "--fallo" : k.iou < 0.5 ? "--ams" : "--ok";
+        lista.append(el("div",{cls:"parcela","aria-current":String(!!act),
+          title:`${k.specie} · ${k.estrato} · arbol ${n2(k.h)} m, deteccion ${n2(k.h+k.dh)} m `+
+                `(${k.dh>0?"+":""}${n2(k.dh)}) · ${k.nRef} puntos de referencia · IoU ${n3(k.iou)}`+
+                (pobre ? " · referencia pobre, el IoU no dice nada" : ""),
+          onclick:()=>{S.sel={tipo:"arbol",i:k.ia}; panelIzq(); panelDer(); pintar();}},
+          el("span",{cls:"nom"}, `${k.ia}`,
+            el("span",{cls:"nota",style:"margin-left:6px"}, `${n2(k.h)} m`),
+            el("span",{cls:"nota",style:"margin-left:4px",hidden:!pobre}, "\u00b7pobre")),
+          el("span",{style:`color:var(${col});font-variant-numeric:tabular-nums`}, n3(k.iou))));
+      }
+      g.append(lista);
+    }
+    c.append(g);
+  }
+
+  // metodo
+  const gm = el("div",{cls:"grupo"}, el("h2",{txt:"Metodo"}));
+  for(const m of METODOS){
+    gm.append(el("label",{cls:"fila"},
+      el("input",{type:"radio",name:"met",checked:S.metodo===m.k,
+        onchange:()=>{S.metodo=m.k; S.sel=null; render();}}),
+      el("span",{cls:"pastilla",style:`background:var(${m.var})`}),
+      el("span",{},m.corto),
+      el("span",{cls:"nota",style:"margin-left:auto"},m.nota)));
+  }
+  gm.append(el("label",{cls:"fila",style:"margin-top:4px"},
+    el("input",{type:"checkbox",checked:S.otros,onchange:e=>{S.otros=e.target.checked;pintar();}}),
+    el("span",{},"ver los otros de fondo")),
+    el("label",{cls:"fila"},
+      el("input",{type:"checkbox",checked:S.resaltar,
+        onchange:e=>{S.resaltar=e.target.checked; pintar();}}),
+      el("span",{},"resaltar lo seleccionado")));
+  c.append(gm);
+
+  // distancia
+  const gd = el("div",{cls:"grupo"}, el("h2",{txt:"Distancia de emparejamiento"}),
+    el("div",{cls:"seg"}, ["2.5","3.5","5.0"].map(d=>
+      el("button",{"aria-pressed":String(S.dmatch===d),txt:d+" m",
+        onclick:()=>{S.dmatch=d; S.sel=null; render();}}))));
+  c.append(gd);
+
+  // capas
+  const gc = el("div",{cls:"grupo"}, el("h2",{txt:"Capas"}));
+  const nombres = {chm:"dosel (CHM)", puntos:"puntos desde arriba",
+                   copasDet:"copas detectadas", region:"region inventariada",
+                   copas:"copas de campo", lineas:"lineas de pareja",
+                   det:"detecciones", fuera:"detecciones fuera"};
+  for(const [k,nom] of Object.entries(nombres)){
+    gc.append(el("label",{cls:"fila"},
+      el("input",{type:"checkbox",checked:S.capas[k],
+        onchange:e=>{S.capas[k]=e.target.checked; pintar(); panelIzq();}}), el("span",{},nom)));
+  }
+  if(S.capas.puntos)
+    gc.append(el("div",{cls:"nota",style:"margin-top:5px"},
+      "los puntos coloreados son siempre de SegmentAnyTree: es el unico metodo que "+
+      "asigna una instancia a cada retorno"));
+  const nG = ARB[S.key] ? derivar().nGrandes : 0;
+  if(S.capas.copasDet && nG)
+    gc.append(el("div",{cls:"nota",style:"margin-top:5px"},
+      `${nG} copa${nG>1?"s":""} de mas de ${AREA_MAX_COPA} m2 sin dibujar: `+
+      "son instancias que se extienden decenas de metros y taparian la parcela"));
+  if(S.capas.copasDet)
+    gc.append(el("div",{cls:"nota",style:"margin-top:5px"},
+      S.metodo==="SAT"
+        ? "copa de SegmentAnyTree: casco convexo real de los puntos de cada instancia"
+        : `copa de ${S.metodo}: circulo equivalente al area publicada, porque el metodo `+
+          "no entrega la forma"));
+  c.append(gc);
+
+  // recorte de evaluacion
+  const gr = el("div",{cls:"grupo"}, el("h2",{txt:"Recorte de evaluacion"}),
+    el("div",{cls:"seg"},
+      el("button",{"aria-pressed":String(S.recorte==="region"),txt:"region",
+        onclick:()=>{S.recorte="region"; S.sel=null; render();}}),
+      el("button",{"aria-pressed":String(S.recorte==="tile"),txt:"tile entero",
+        onclick:()=>{S.recorte="tile"; S.sel=null; render();}})),
+    el("div",{cls:"nota",style:"margin-top:5px"},
+      S.recorte==="region"
+        ? "solo cuenta lo que cae dentro del inventario"
+        : "cuenta todo el tile: fuera del inventario hay dosel que nadie midio, "+
+          "asi que la precision se hunde de forma artificial"));
+  c.append(gr);
+
+  // estrato
+  const ge = el("div",{cls:"grupo"}, el("h2",{txt:"Estrato"}),
+    el("select",{onchange:e=>{S.estrato=e.target.value; S.sel=null; render();}},
+      ["todos",...ESTRATOS].map(v=>el("option",{value:v,selected:S.estrato===v},v))));
+  c.append(ge);
+
+  // cola de casos
+  if(S.vista==="mapa"){
+    const cs = casos();
+    const lista = el("div",{style:"max-height:190px;overflow-y:auto;margin:-2px -4px 0"});
+    cs.slice(0,300).forEach((k,n)=>{
+      const act = S.sel && S.sel.tipo===k.tipo && S.sel.i===k.i;
+      lista.append(el("div",{cls:"parcela","aria-current":String(!!act),
+        onclick:()=>{S.sel={tipo:k.tipo,i:k.i}; centrarEnSel(); panelIzq(); panelDer(); pintar();}},
+        el("span",{cls:"nom",style:`color:var(${k.tipo==="arbol"?"--fallo":"--fp"})`},
+          (k.tipo==="arbol"?"perdido ":"falso ")+k.i),
+        el("span",{cls:"nota"},k.txt)));
+    });
+    const nA = cs.filter(k=>k.tipo==="arbol").length;
+    c.append(el("div",{cls:"grupo"},
+      el("h2",{txt:`Casos (${nA} perdidos, ${cs.length-nA} falsos)`}),
+      cs.length?lista:el("div",{cls:"nota"},"sin errores con estos filtros"),
+      el("div",{cls:"nota",style:"margin-top:5px"},"n y p recorren la lista")));
+  }
+
+  // color de los puntos: vale para el mapa visto desde arriba y para la vista 3D
+  if(S.capas.puntos || S.vista==="nube" || S.vista==="arbol"){
+    const gn = el("div",{cls:"grupo"}, el("h2",{txt:"Color de los puntos"}),
+      el("div",{cls:"seg"},
+        el("button",{"aria-pressed":String(S.nube.color==="inst"),txt:"instancia",
+          onclick:()=>{S.nube.color="inst"; pintar(); panelIzq();}}),
+        el("button",{"aria-pressed":String(S.nube.color==="altura"),txt:"altura",
+          onclick:()=>{S.nube.color="altura"; pintar(); panelIzq();}})),
+      el("div",{cls:"nota",style:"margin-top:5px"},
+        S.nube.color==="inst"
+          ? "un color por instancia predicha: cada mancha es un arbol segun el modelo"
+          : "verde abajo, claro arriba: es el relieve del dosel"));
+    if(S.vista==="nube" || S.vista==="arbol"){
+      gn.append(el("h2",{txt:"Camara",style:"margin-top:12px"}),
+        el("div",{cls:"seg"}, Object.entries(CAMARAS).map(([k,cam])=>
+          el("button",{txt:cam.nom,
+            "aria-pressed":String(Math.abs(S.nube.incl-cam.incl)<0.02 &&
+                                  Math.abs(S.nube.rot-cam.rot)<0.02),
+            onclick:()=>{S.nube.rot=cam.rot; S.nube.incl=cam.incl;
+                         S.nube.pan={x:0,y:0}; pintar(); panelIzq();}}))),
+        el("div",{cls:"nota",style:"margin-top:5px"},
+          "arrastrar gira, mayusculas y arrastrar desplaza, rueda acerca"));
+    }
+    c.append(gn);
+  }
+}
+
+function centrarEnSel(){
+  const a = ARB[S.key], d = derivar();
+  if(!S.sel || !a) return;
+  const X = S.sel.tipo==="arbol" ? a.inv.x[S.sel.i] : d.det.x[S.sel.i];
+  const Y = S.sel.tipo==="arbol" ? a.inv.y[S.sel.i] : d.det.y[S.sel.i];
+  if(X==null || Y==null) return;
+  S.vw.auto = false; S.vw.cx = X; S.vw.cy = Y;
+  S.vw.esc = Math.max(S.vw.esc, 6);
+}
+
+function panelDer(){
+  const c = $("#der"); c.textContent="";
+  const g = GEO[S.key], a = ARB[S.key];
+  const [sit,par] = S.key.split("/");
+  const nomSit = SITIOS.find(s=>s.k===sit).nom;
+
+  c.append(el("div",{cls:"grupo"},
+    el("h2",{txt:"Parcela"}),
+    el("div",{style:"font-weight:650;margin-bottom:6px"}, `${nomSit} · ${par}`),
+    el("dl",{cls:"kv"},
+      el("dt",{txt:"arboles de campo"}), el("dd",{txt:a?String(a.inv.x.length):"--"}),
+      el("dt",{txt:"puntos ALS"}), el("dd",{txt:g?g.n_puntos.toLocaleString("es"):"--"}),
+      el("dt",{txt:"densidad"}), el("dd",{txt:g?n2(g.densidad_pts_m2)+" pts/m2":"--"}),
+      el("dt",{txt:"altura maxima"}), el("dd",{txt:g?n2(g.h_max)+" m":"--"}),
+      el("dt",{txt:"region inventariada"}), el("dd",{txt:g?n2(g.pct_region)+" % del tile":"--"}),
+      el("dt",{txt:"detecciones fuera"}),
+      el("dd",{txt:(a&&a.det_fuera&&a.det_fuera[S.metodo])
+        ? `${a.det_fuera[S.metodo].x.length} de ${a.det_fuera[S.metodo].x.length+a.det[S.metodo].x.length}`
+        : "--"}))));
+
+  if(a){
+    const t = el("table",{cls:"met"},
+      el("thead",{}, el("tr",{}, el("th",{txt:"metodo"}), el("th",{txt:"exh."}),
+        el("th",{txt:"p. reg"}), el("th",{txt:"p. tile"}), el("th",{txt:"F1"}))));
+    const tb = el("tbody",{});
+    for(const m of METODOS){
+      const mm = metParcela(S.key, m.k, S.dmatch);              // el recorte activo
+      const mr = metParcela(S.key, m.k, S.dmatch, "region");   // siempre recortado
+      const mt = metParcela(S.key, m.k, S.dmatch, "tile");     // siempre sin recortar
+      tb.append(el("tr",{style:m.k===S.metodo?"font-weight:650":"",
+        title:mm?`${mm.TP} aciertos de ${mm.ND} detecciones dentro, sobre ${mm.NR} arboles`+
+              (mt?` · sin recortar: ${mt.TP} de ${mt.ND}`:""):""},
+        el("td",{}, el("span",{cls:"pastilla",style:`background:var(${m.var});margin-right:5px`}), m.corto),
+        el("td",{txt:mm?n3(mm.recall):"--"}), el("td",{txt:mr?n3(mr.precision):"--"}),
+        el("td",{style:"color:var(--suave)",txt:mt?n3(mt.precision):"--"}),
+        el("td",{txt:mm?n3(mm.f1):"--"})));
+    }
+    t.append(tb);
+    c.append(el("div",{cls:"grupo"}, el("h2",{txt:`Esta parcela a ${S.dmatch} m`}), t,
+      el("div",{cls:"nota",style:"margin-top:5px"},
+        "p. reg y p. tile son la precision recortando al inventario y sin recortar. "+
+        "La exhaustividad y el F1 siguen al recorte que tengas activo.")));
+  }
+
+  // comparacion punto a punto, solo en la vista de arbol
+  if(S.vista==="arbol"){
+    const g = el("div",{cls:"grupo"}, el("h2",{txt:"Comparacion punto a punto"}));
+    const cmp = (S.metodo==="SAT") ? comparacionArbol() : null;
+    if(S.metodo!=="SAT"){
+      g.append(el("div",{cls:"nota"},
+        `${S.metodo} no asigna puntos a arboles, asi que aqui no hay nada que comparar. `+
+        "Cambia a SegmentAnyTree."));
+    } else if(!cmp || cmp.sinPar){
+      g.append(el("div",{cls:"nota"},"elige un arbol emparejado, o pulsa n para recorrerlos"));
+    } else {
+      g.append(el("dl",{cls:"kv"},
+        el("dt",{txt:"puntos de la referencia"}), el("dd",{txt:String(cmp.nRef)}),
+        el("dt",{txt:"puntos de la instancia"}), el("dd",{txt:String(cmp.nPred)}),
+        el("dt",{txt:"en las dos"}), el("dd",{txt:String(cmp.nAmbos)}),
+        el("dt",{txt:"IoU de puntos"}), el("dd",{txt:n3(cmp.iou)}),
+        el("dt",{txt:"cubre de la referencia"}), el("dd",{txt:pct(cmp.recallPts)}),
+        el("dt",{txt:"acierta de la instancia"}), el("dd",{txt:pct(cmp.precPts)})),
+        el("div",{cls:"leyenda",style:"margin-top:8px"},
+          [3,2,1,0].map(k=>el("div",{},
+            el("span",{cls:"pastilla",style:`background:var(${CLS_COL[k]})`}), CLS_NOM[k]))),
+        el("div",{cls:"nota",style:"margin-top:8px;color:var(--fallo)",
+          hidden:cmp.nRef >= MIN_REF},
+          `Solo ${cmp.nRef} puntos en el cilindro de referencia. El IoU de este par no `+
+          "significa nada: casi siempre es un arbol suprimido emparejado por cercania con "+
+          "la copa del dominante que tiene encima, o un arbol al que el inventario le dio "+
+          "area cero."),
+        el("div",{cls:"nota",style:"margin-top:8px"},
+          "La referencia es el cilindro de copa que sale de los radios medidos en campo, "+
+          "la misma regla con la que se definen los estratos. No es una segmentacion "+
+          "anotada: nadie etiqueto estos puntos uno a uno, asi que estas cifras sirven "+
+          "para mirar casos, no para medir calidad de delineacion."));
+    }
+    c.append(g);
+  }
+
+  // seleccion
+  const gs = el("div",{cls:"grupo"}, el("h2",{txt:"Seleccion"}));
+  if(!S.sel || !a){ gs.append(el("div",{cls:"nota"},"pulsa un arbol o una deteccion en el mapa")); }
+  else if(S.sel.tipo==="arbol"){
+    const i=S.sel.i, d=derivar(), hit=d.arbolOK.has(i);
+    const par = d.pares.find(p=>p[1]===i);
+    let dist = null;
+    if(par){ dist = Math.hypot(d.det.x[par[0]]-a.inv.x[i], d.det.y[par[0]]-a.inv.y[i]); }
+    gs.append(el("div",{style:`font-weight:650;color:var(${hit?"--ok":"--fallo"})`},
+        hit?"arbol detectado":"arbol no detectado"),
+      el("dl",{cls:"kv"},
+        el("dt",{txt:"altura"}), el("dd",{txt:n2(a.inv.h[i])+" m"}),
+        el("dt",{txt:"area de copa"}), el("dd",{txt:n2(a.inv.area[i])+" m2"}),
+        el("dt",{txt:"radio"}), el("dd",{txt:n2(a.inv.r[i])+" m"}),
+        el("dt",{txt:"familia"}), el("dd",{txt:a.inv.fam[i]||"?"}),
+        el("dt",{txt:"retornos en copa"}), el("dd",{txt:String(a.inv.npts[i])}),
+        el("dt",{txt:"estrato"}), el("dd",{txt:a.inv.estrato[i]}),
+        el("dt",{txt:"distancia a su pareja"}), el("dd",{txt:dist==null?"--":n2(dist)+" m"})));
+    // que hace cada metodo con este arbol
+    const tt = el("table",{cls:"met"}, el("thead",{},el("tr",{},el("th",{txt:"metodo"}),el("th",{txt:"lo ve"}))));
+    const tbb = el("tbody",{});
+    for(const m of METODOS){
+      const pares = (((a.pares||{})[m.k])||{})[S.dmatch]||[];
+      const v = pares.some(p=>p[1]===i);
+      tbb.append(el("tr",{}, el("td",{txt:m.corto}),
+        el("td",{style:`color:var(${v?"--ok":"--fallo"})`, txt:v?"si":"no"})));
+    }
+    tt.append(tbb); gs.append(tt);
+  } else {
+    const i=S.sel.i, d=derivar(), ok=d.detOK.has(i);
+    gs.append(el("div",{style:`font-weight:650;color:var(${ok?"--ok":"--fp"})`},
+        ok?"deteccion emparejada":"deteccion sin pareja"),
+      el("dl",{cls:"kv"},
+        el("dt",{txt:"metodo"}), el("dd",{txt:S.metodo}),
+        el("dt",{txt:"altura"}), el("dd",{txt:n2(d.det.h[i])+" m"}),
+        el("dt",{txt:"area"}), el("dd",{txt:n2(d.det.area[i])+" m2"})));
+  }
+  c.append(gs);
+
+  // leyenda
+  const L=(color,txt)=>el("div",{}, el("span",{cls:"pastilla",style:`background:var(${color})`}), txt);
+  c.append(el("div",{cls:"grupo"}, el("h2",{txt:"Leyenda"}),
+    el("div",{cls:"leyenda"},
+      L("--ok","arbol de campo detectado"),
+      L("--fallo","arbol de campo perdido"),
+      L(METODOS.find(m=>m.k===S.metodo).var,
+        S.metodo==="SAT" ? "copa detectada (casco real) y su rombo"
+                         : "copa detectada (circulo equivalente) y su rombo"),
+      L("--fp","deteccion sin pareja (aspa)"),
+      L("--suave","deteccion fuera de la region (circulo hueco)"),
+      el("div",{cls:"nota",style:"margin-top:4px"},
+        "el grosor del circulo indica el estrato: grueso dominante, fino suprimido"))));
+}
+
+// ------------------------------------------------------------------ resultados
+const NS="http://www.w3.org/2000/svg";
+const sv=(t,p={},...h)=>{const n=document.createElementNS(NS,t);
+  for(const [k,v] of Object.entries(p)) if(v!==null&&v!==false) n.setAttribute(k,v);
+  for(const c of h.flat()) if(c!=null) n.append(c.nodeType?c:document.createTextNode(c));
+  return n;};
+
+function barrasRecall(d){
+  const w=430,h=200,ml=40,mb=52,mt=10;
+  const g=sv("svg",{viewBox:`0 0 ${w} ${h}`,width:"100%",style:"max-width:430px"});
+  const y=v=>mt+(1-v)*(h-mt-mb);
+  for(let t=0;t<=1.0001;t+=0.2){
+    g.append(sv("line",{x1:ml,x2:w-6,y1:y(t),y2:y(t),stroke:cssv("--linea")}));
+    g.append(sv("text",{x:ml-6,y:y(t)+3.5,"text-anchor":"end","font-size":9,
+      fill:cssv("--suave")},t.toFixed(1)));
+  }
+  const ancho=(w-ml-10)/2, bw=ancho/4.2;
+  SITIOS.forEach((st,si)=>{
+    const x0=ml+si*ancho+ancho/2-1.6*bw;
+    METODOS.forEach((m,mi)=>{
+      const a=agregado(st.k,m.k,d); if(!a) return;
+      const x=x0+mi*bw*1.08;
+      g.append(sv("rect",{x,y:y(a.recall),width:bw*0.94,height:Math.max(0,y(0)-y(a.recall)),
+        fill:cssv(m.var),rx:1.5}));
+      g.append(sv("line",{x1:x+bw*.47,x2:x+bw*.47,y1:y(a.ic[0]),y2:y(a.ic[1]),
+        stroke:cssv("--texto"),"stroke-width":1.1}));
+      g.append(sv("line",{x1:x+bw*.27,x2:x+bw*.67,y1:y(a.ic[1]),y2:y(a.ic[1]),stroke:cssv("--texto")}));
+      g.append(sv("line",{x1:x+bw*.27,x2:x+bw*.67,y1:y(a.ic[0]),y2:y(a.ic[0]),stroke:cssv("--texto")}));
+      g.append(sv("text",{x:x+bw*.47,y:y(a.ic[1])-4,"text-anchor":"middle","font-size":9,
+        fill:cssv("--texto")},a.recall.toFixed(3)));
+    });
+    g.append(sv("text",{x:ml+si*ancho+ancho/2,y:h-mb+16,"text-anchor":"middle","font-size":10,
+      fill:cssv("--texto")},st.nom));
+  });
+  METODOS.forEach((m,mi)=>{
+    const x=ml+8+mi*128;
+    g.append(sv("rect",{x,y:h-22,width:9,height:9,fill:cssv(m.var),rx:1.5}));
+    g.append(sv("text",{x:x+13,y:h-14,"font-size":9,fill:cssv("--suave")},m.corto));
+  });
+  g.append(sv("text",{x:10,y:mt+4,"font-size":9,fill:cssv("--suave")},"exhaustividad"));
+  return g;
+}
+
+function lineasEstrato(d){
+  const w=430,h=200,ml=40,mb=44,mt=12;
+  const g=sv("svg",{viewBox:`0 0 ${w} ${h}`,width:"100%",style:"max-width:430px"});
+  const y=v=>mt+(1-v)*(h-mt-mb);
+  const xs=i=>ml+12+i*((w-ml-24)/5);
+  for(let t=0;t<=1.0001;t+=0.2){
+    g.append(sv("line",{x1:ml,x2:w-6,y1:y(t),y2:y(t),stroke:cssv("--linea")}));
+    g.append(sv("text",{x:ml-6,y:y(t)+3.5,"text-anchor":"end","font-size":9,fill:cssv("--suave")},t.toFixed(1)));
+  }
+  g.append(sv("line",{x1:xs(2.5),x2:xs(2.5),y1:mt,y2:y(0),stroke:cssv("--suave"),
+    "stroke-dasharray":"3 3","stroke-width":.8}));
+  for(const m of METODOS){
+    const pts=[];
+    SITIOS.forEach((st,si)=>ESTRATOS.forEach((e,ei)=>{
+      const a=agregadoEstrato(st.k,m.k,d)[e];
+      pts.push([xs(si*3+ei), y(a.n?a.tp/a.n:0)]);
+    }));
+    g.append(sv("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",
+      stroke:cssv(m.var),"stroke-width":1.6}));
+    pts.forEach(p=>g.append(sv("circle",{cx:p[0],cy:p[1],r:2.6,fill:cssv(m.var)})));
+  }
+  ["Dom","Int","Sup","Dom","Int","Sup"].forEach((t,i)=>
+    g.append(sv("text",{x:xs(i),y:h-mb+15,"text-anchor":"middle","font-size":9,fill:cssv("--texto")},t)));
+  SITIOS.forEach((st,si)=>g.append(sv("text",{x:xs(si*3+1),y:h-mb+29,"text-anchor":"middle",
+    "font-size":9,fill:cssv("--suave")},st.nom)));
+  return g;
+}
+
+function porParcela(d){
+  const w=430,h=210,ml=40,mb=40,mt=10;
+  const todas=SITIOS.flatMap(s=>s.parcelas.map(p=>s.k+"/"+p));
+  const g=sv("svg",{viewBox:`0 0 ${w} ${h}`,width:"100%",style:"max-width:430px"});
+  const y=v=>mt+(1-v)*(h-mt-mb);
+  const xs=i=>ml+6+i*((w-ml-18)/(todas.length-1));
+  for(let t=0;t<=1.0001;t+=0.25){
+    g.append(sv("line",{x1:ml,x2:w-6,y1:y(t),y2:y(t),stroke:cssv("--linea")}));
+    g.append(sv("text",{x:ml-6,y:y(t)+3.5,"text-anchor":"end","font-size":9,fill:cssv("--suave")},t.toFixed(2)));
+  }
+  g.append(sv("line",{x1:xs(6.5),x2:xs(6.5),y1:mt,y2:y(0),stroke:cssv("--suave"),
+    "stroke-dasharray":"3 3","stroke-width":.8}));
+  for(const m of METODOS){
+    const pts=todas.map((k,i)=>{const mm=metParcela(k,m.k,d); return [xs(i), y(mm?mm.recall:0)];});
+    g.append(sv("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",
+      stroke:cssv(m.var),"stroke-width":1.3,opacity:.9}));
+    pts.forEach((p,i)=>g.append(sv("circle",{cx:p[0],cy:p[1],r:todas[i]===S.key?3.8:2,
+      fill:cssv(m.var),stroke:todas[i]===S.key?cssv("--sel"):"none","stroke-width":1})));
+  }
+  todas.forEach((k,i)=>{ if(i%2) return;
+    g.append(sv("text",{x:xs(i),y:h-mb+14,"text-anchor":"middle","font-size":7.5,
+      fill:cssv("--suave")},k.split("/")[1]));});
+  return g;
+}
+
+function tablaGlobal(d){
+  const t=el("table",{cls:"big"}, el("thead",{}, el("tr",{},
+    el("th",{txt:"metodo"}), el("th",{txt:"exhaustividad"}), el("th",{txt:"IC 95 %"}),
+    el("th",{txt:"precision"}), el("th",{txt:"F1"}), el("th",{txt:"TP"}),
+    el("th",{txt:"ND"}), el("th",{txt:"NR"}))));
+  const tb=el("tbody",{});
+  for(const st of SITIOS){
+    const filas = METODOS.map(m=>({m, a:agregado(st.k,m.k,d)})).filter(r=>r.a);
+    const maxR = Math.max(...filas.map(r=>r.a.recall), 0);
+    const maxF = Math.max(...filas.map(r=>r.a.f1), 0);
+    tb.append(el("tr",{cls:"sep"}, el("td",{colspan:8,
+      txt:`${st.nom} · ${st.parcelas.length} parcelas · ${filas[0]?filas[0].a.NR:0} arboles`})));
+    for(const {m,a} of filas){
+      tb.append(el("tr",{},
+        el("td",{}, el("span",{cls:"pastilla",style:`background:var(${m.var});margin-right:6px`}),
+          m.nom, el("span",{cls:"nota"}, " " + m.nota)),
+        el("td",{cls:a.recall===maxR?"mejor":"",txt:n3(a.recall)}),
+        el("td",{txt:`[${n3(a.ic[0])}, ${n3(a.ic[1])}]`}),
+        el("td",{txt:n3(a.precision)}),
+        el("td",{cls:a.f1===maxF?"mejor":"",txt:n3(a.f1)}),
+        el("td",{txt:String(a.TP)}), el("td",{txt:String(a.ND)}), el("td",{txt:String(a.NR)})));
+    }
+  }
+  t.append(tb); return t;
+}
+
+function tablaEstratos(d){
+  const t=el("table",{cls:"big"}, el("thead",{}, el("tr",{},
+    el("th",{txt:"sitio y estrato"}), el("th",{txt:"arboles"}),
+    ...METODOS.map(m=>el("th",{txt:m.corto})))));
+  const tb=el("tbody",{});
+  for(const st of SITIOS){
+    const por = {}; METODOS.forEach(m=>por[m.k]=agregadoEstrato(st.k,m.k,d));
+    for(const e of ESTRATOS){
+      const vals = METODOS.map(m=>{const a=por[m.k][e]; return a.n?a.tp/a.n:0;});
+      const mx = Math.max(...vals);
+      tb.append(el("tr",{},
+        el("td",{txt:`${st.nom} · ${e}`}),
+        el("td",{txt:String(por[METODOS[0].k][e].n)}),
+        ...vals.map(v=>el("td",{cls:v===mx?"mejor":"",txt:n3(v)}))));
+    }
+  }
+  t.append(tb); return t;
+}
+
+function vistaResultados(){
+  const c=$("#vista-res"); c.textContent="";
+  const d=S.dmatch;
+  c.append(el("h2",{txt:`Resultados agregados a ${d} m`}),
+    el("div",{cls:"nota"},
+      "Todo lo de esta pestana se recalcula en el navegador a partir de las parejas exportadas, "+
+      "asi que responde a la distancia de emparejamiento que elijas en el panel izquierdo. "+
+      "Los intervalos salen de un bootstrap de 2000 remuestreos de parcelas con semilla fija, "+
+      "asi que pueden diferir del articulo en la tercera cifra. El emparejamiento es solo por "+
+      "distancia para los tres metodos. Si cambias el recorte a tile entero, toda la tabla se "+
+      "recalcula contando como falsos positivos las detecciones que caen sobre dosel que nadie "+
+      "midio: es el sesgo del marco de evaluacion, visto en vivo."),
+    el("div",{style:"height:14px"}),
+    tablaGlobal(d),
+    el("h3",{txt:"Exhaustividad por estrato de detectabilidad"}),
+    tablaEstratos(d),
+    el("h3",{txt:"Graficos"}),
+    el("div",{cls:"grid2"},
+      el("div",{cls:"tarjeta"}, el("h4",{txt:"Exhaustividad por sitio, con intervalo"}), barrasRecall(d)),
+      el("div",{cls:"tarjeta"}, el("h4",{txt:"Exhaustividad por estrato"}), lineasEstrato(d)),
+      el("div",{cls:"tarjeta"}, el("h4",{txt:"Exhaustividad parcela a parcela"}), porParcela(d))));
+}
+
+// ------------------------------------------------------------------ interaccion
+const wrap = $("#lienzo-wrap");
+const vres = el("div",{id:"vista-res",style:"position:absolute;inset:0;display:none"});
+wrap.append(vres);
+
+function cercano(px,py){
+  const a=ARB[S.key], d=derivar();
+  if(!a) return null;
+  let mejor=null, md=1e9;
+  for(let i=0;i<d.det.x.length;i++){
+    const dd=Math.hypot(sx(d.det.x[i])-px, sy(d.det.y[i])-py);
+    if(dd<md && dd<10){ md=dd; mejor={tipo:"det",i,d:dd}; }
+  }
+  for(let i=0;i<a.inv.x.length;i++){
+    if(!visibleArbol(a,i)) continue;
+    const dd=Math.hypot(sx(a.inv.x[i])-px, sy(a.inv.y[i])-py);
+    const r=Math.max(6, a.inv.r[i]*S.vw.esc);
+    if(dd<r && dd<md+4){ md=dd; mejor={tipo:"arbol",i,d:dd}; }
+  }
+  return mejor;
+}
+
+let arrastre=null, hoverPend=false, ultimoRaton={x:0,y:0};
+cv.addEventListener("mousedown",e=>{
+  arrastre={x:e.offsetX, y:e.offsetY, cx:S.vw.cx, cy:S.vw.cy,
+            rot:S.nube.rot, inc:S.nube.incl, pan:{...S.nube.pan}, sh:e.shiftKey, movio:false};
+});
+window.addEventListener("mouseup",()=>{arrastre=null;});
+cv.addEventListener("mousemove",e=>{
+  const px=e.offsetX, py=e.offsetY;
+  if(arrastre){
+    const dx=px-arrastre.x, dy=py-arrastre.y;
+    if(Math.abs(dx)+Math.abs(dy)>3) arrastre.movio=true;
+    if(S.vista==="mapa"){
+      S.vw.auto = false;
+      S.vw.cx = arrastre.cx - dx/S.vw.esc;
+      S.vw.cy = arrastre.cy + dy/S.vw.esc;
+    } else if(S.vista==="nube" || S.vista==="arbol"){
+      if(arrastre.sh){ S.nube.pan={x:arrastre.pan.x+dx, y:arrastre.pan.y+dy}; }
+      else { S.nube.rot = arrastre.rot + dx*0.008;
+             S.nube.incl = Math.max(0.05, Math.min(1.55, arrastre.inc - dy*0.006)); }
+    }
+    pintar(); return;
+  }
+  if(S.vista==="nube"){
+    // El resaltado se recalcula como mucho una vez por fotograma.
+    if(!hoverPend){
+      hoverPend = true;
+      requestAnimationFrame(()=>{
+        hoverPend = false;
+        const iid = instBajoCursor(ultimoRaton.x, ultimoRaton.y);
+        if(iid !== S.nube.foco){ S.nube.foco = iid; pintar(); }
+      });
+    }
+    ultimoRaton = {x:px, y:py};
+    return;
+  }
+  if(S.vista!=="mapa") return;
+  const c=cercano(px,py), t=$("#tip"), a=ARB[S.key], d=derivar();
+  if(!c || !a){ t.style.display="none"; return; }
+  let txt;
+  if(c.tipo==="arbol"){
+    const hit=d.arbolOK.has(c.i);
+    txt = `<b>arbol ${c.i}</b> · ${a.inv.estrato[c.i]}<br>`+
+          `${n2(a.inv.h[c.i])} m de alto, copa ${n2(a.inv.area[c.i])} m2<br>`+
+          `${a.inv.npts[c.i]} retornos · <b style="color:var(${hit?"--ok":"--fallo"})">`+
+          `${hit?"detectado":"no detectado"}</b>`;
+  } else {
+    const ok=d.detOK.has(c.i);
+    txt = `<b>deteccion ${S.metodo} ${c.i}</b><br>${n2(d.det.h[c.i])} m, ${n2(d.det.area[c.i])} m2<br>`+
+          `<b style="color:var(${ok?"--ok":"--fp"})">${ok?"emparejada":"sin pareja"}</b>`;
+  }
+  t.innerHTML = txt;
+  t.style.display="block";
+  t.style.left = Math.min(W-240, px+14)+"px";
+  t.style.top  = Math.min(H-90, py+14)+"px";
+});
+cv.addEventListener("mouseleave",()=>{
+  $("#tip").style.display="none";
+  if(S.nube.foco != null){ S.nube.foco = null; pintar(); }
+});
+cv.addEventListener("click",e=>{
+  if(arrastre && arrastre.movio) return;
+  if(S.vista==="nube"){
+    // Fijar la instancia que hay debajo: se selecciona su deteccion, asi que el panel
+    // de la derecha y la vista de arbol pasan a hablar de ella.
+    const iid = instBajoCursor(e.offsetX, e.offsetY);
+    const j = detDeInstancia(iid);
+    S.sel = j == null ? null : {tipo:"det", i:j};
+    S.nube.foco = null;
+    panelDer(); pintar();
+    return;
+  }
+  if(S.vista!=="mapa") return;
+  const c=cercano(e.offsetX,e.offsetY);
+  S.sel = c ? {tipo:c.tipo,i:c.i} : null;
+  panelDer(); pintar();
+});
+cv.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const f = Math.exp(-e.deltaY*0.0015);
+  if(S.vista==="nube" || S.vista==="arbol"){
+    S.nube.zoom=Math.max(.2,Math.min(12,S.nube.zoom*f)); pintar(); return; }
+  S.vw.auto = false;
+  const wx0=wx_(e.offsetX), wy0=wy_(e.offsetY);
+  S.vw.esc = Math.max(.4, Math.min(120, S.vw.esc*f));
+  S.vw.cx += wx0 - wx_(e.offsetX);
+  S.vw.cy += wy0 - wy_(e.offsetY);
+  pintar();
+},{passive:false});
+
+window.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT") return;
+  const todas=SITIOS.flatMap(s=>s.parcelas.map(p=>s.k+"/"+p));
+  const i=todas.indexOf(S.key);
+  if(e.key==="ArrowDown"||e.key==="j"){ S.key=todas[(i+1)%todas.length]; S.sel=null; S.vw.auto=true; encajar(); render(); }
+  if(e.key==="ArrowUp"||e.key==="k"){ S.key=todas[(i-1+todas.length)%todas.length]; S.sel=null; S.vw.auto=true; encajar(); render(); }
+  if("12345".includes(e.key)&&e.key!==""){ S.metodo=METODOS[+e.key-1].k; S.sel=null; render(); }
+  if(e.key==="h"){ S.ocultar=!S.ocultar; pintar(); }
+  if(e.key==="r"){ S.resaltar=!S.resaltar; panelIzq(); pintar(); }
+  if((e.key==="n"||e.key==="p") && S.vista==="arbol"){
+    const der=derivar();
+    const ar=der.pares.map(pr=>pr[1]).sort((x,y)=>x-y);
+    if(!ar.length) return;
+    let j = S.sel && S.sel.tipo==="arbol" ? ar.indexOf(S.sel.i) : -1;
+    j = (j + (e.key==="n"?1:ar.length-1) + ar.length) % ar.length;
+    S.sel={tipo:"arbol",i:ar[j]}; panelIzq(); panelDer(); pintar();
+    return;
+  }
+  if(e.key==="n"||e.key==="p"){
+    const cs=casos(); if(!cs.length) return;
+    let j = S.sel ? cs.findIndex(k=>k.tipo===S.sel.tipo && k.i===S.sel.i) : -1;
+    j = (j + (e.key==="n"?1:cs.length-1) + cs.length) % cs.length;
+    S.sel={tipo:cs[j].tipo,i:cs[j].i}; centrarEnSel(); panelIzq(); panelDer(); pintar();
+  }
+});
+
+// ------------------------------------------------------------------ vistas
+function cambiarVista(v){
+  S.vista=v;
+  for(const b of $("#tabs").children) b.setAttribute("aria-selected", String(b.dataset.v===v));
+  const res = v==="res";
+  vres.style.display = res?"block":"none";
+  cv.style.display   = res?"none":"block";
+  $("#escala").style.display = (v==="mapa")?"block":"none";
+  $("#ayuda").style.display  = res?"none":"block";
+  $("#ayuda").textContent = v==="mapa"
+    ? "arrastrar mueve, rueda acerca, pulsa para seleccionar"
+    : (v==="arbol" ? "n y p pasan al siguiente par, arrastrar gira, rueda acerca"
+                   : "arrastrar gira, mayusculas y arrastrar desplaza, rueda acerca");
+  $("#der").style.display = res?"none":"block";
+  $("#cuerpo").className = res?"solo-der":"";
+  document.getElementById("cuerpo").style.gridTemplateColumns = res?"206px 1fr":"206px 1fr 274px";
+  render();
+}
+$("#tabs").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(b) cambiarVista(b.dataset.v);
+});
+$("#btn-ajustar").addEventListener("click",()=>{
+  if(S.vista==="nube"){ S.nube={rot:.6,incl:.30,zoom:1,color:S.nube.color,pan:{x:0,y:0}}; }
+  else { S.vw.auto=true; encajar(); }
+  pintar();
+});
+$("#btn-tema").addEventListener("click",()=>{
+  const d=document.documentElement;
+  d.dataset.tema = d.dataset.tema==="oscuro" ? "claro" : "oscuro";
+  try{ localStorage.setItem("visor-tema", d.dataset.tema); }catch(_){}
+  tenidos.clear();
+  render();
+});
+
+function render(){
+  panelIzq();
+  if(S.vista==="res"){ vistaResultados(); }
+  else { panelDer(); pintar(); }
+  const g=GEO[S.key];
+  $("#sub").textContent = g ? `· ${SITIOS.find(s=>s.k===S.key.split("/")[0]).nom} ${S.key.split("/")[1]}` : "";
+}
+
+window.addEventListener("resize",()=>{ medir(); pintar(); });
+
+// ------------------------------------------------------------------ arranque
+(function init(){
+  try{
+    const t=localStorage.getItem("visor-tema");
+    if(t) document.documentElement.dataset.tema=t;
+    else if(matchMedia("(prefers-color-scheme: dark)").matches)
+      document.documentElement.dataset.tema="oscuro";
+  }catch(_){}
+  medir();
+  const hay = Object.keys(ARB).length || Object.keys(GEO).length;
+  $("#cargando").style.display = hay ? "none" : "grid";
+  if(!hay){
+    $("#cargando").innerHTML = "<div style='text-align:center;max-width:400px'>"+
+      "<b>Faltan los archivos de datos.</b><br><br>Ejecuta <code>python3 empaquetar.py</code> "+
+      "en esta carpeta para generar <code>data/geo.js</code>, <code>data/arboles.js</code> "+
+      "y <code>data/nubes.js</code>.</div>";
+    return;
+  }
+  if(!ARB[S.key]) S.key = Object.keys(ARB)[0] || Object.keys(GEO)[0];
+  encajar();
+  cambiarVista("mapa");
+  requestAnimationFrame(()=>{ medir(); pintar(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+{
+  "A_ams3d": {
+    "oraculo de la carta": {
+      "cham": {
+        "TP": 575,
+        "ND": 690,
+        "NR": 894,
+        "recall": 0.643,
+        "precision": 0.833,
+        "f1": 0.726
+      },
+      "pell": {
+        "TP": 349,
+        "ND": 420,
+        "NR": 543,
+        "recall": 0.643,
+        "precision": 0.831,
+        "f1": 0.725
+      },
+      "global": {
+        "TP": 924,
+        "ND": 1110,
+        "NR": 1437,
+        "recall": 0.643,
+        "precision": 0.832,
+        "f1": 0.726
+      }
+    },
+    "oraculo, F1 nuestro": {
+      "cham": {
+        "TP": 604,
+        "ND": 736,
+        "NR": 894,
+        "recall": 0.676,
+        "precision": 0.821,
+        "f1": 0.741
+      },
+      "pell": {
+        "TP": 409,
+        "ND": 499,
+        "NR": 543,
+        "recall": 0.753,
+        "precision": 0.82,
+        "f1": 0.785
+      },
+      "global": {
+        "TP": 1013,
+        "ND": 1235,
+        "NR": 1437,
+        "recall": 0.705,
+        "precision": 0.82,
+        "f1": 0.758
+      }
+    },
+    "validado dejando una fuera": {
+      "cham": {
+        "TP": 584,
+        "ND": 731,
+        "NR": 894,
+        "recall": 0.653,
+        "precision": 0.799,
+        "f1": 0.719
+      },
+      "pell": {
+        "TP": 347,
+        "ND": 413,
+        "NR": 543,
+        "recall": 0.639,
+        "precision": 0.84,
+        "f1": 0.726
+      },
+      "global": {
+        "TP": 931,
+        "ND": 1144,
+        "NR": 1437,
+        "recall": 0.648,
+        "precision": 0.814,
+        "f1": 0.721
+      }
+    }
+  },
+  "B_no_inferioridad": {
+    "oraculo de la carta": {
+      "cham": {
+        "recall": {
+          "dif": 0.064,
+          "p5": 0.029,
+          "ic95": [
+            0.02,
+            0.089
+          ],
+          "no_inferior": true,
+          "equivalente": false
+        },
+        "f1": {
+          "dif": 0.032,
+          "p5": 0.008,
+          "ic95": [
+            -0.0,
+            0.052
+          ],
+          "no_inferior": true,
+          "equivalente": true
+        }
+      },
+      "pell": {
+        "recall": {
+          "dif": -0.018,
+          "p5": -0.056,
+          "ic95": [
+            -0.066,
+            0.021
+          ],
+          "no_inferior": false,
+          "equivalente": false
+        },
+        "f1": {
+          "dif": 0.008,
+          "p5": -0.018,
+          "ic95": [
+            -0.022,
+            0.042
+          ],
+          "no_inferior": true,
+          "equivalente": true
+        }
+      },
+      "global": {
+        "recall": {
+          "dif": 0.033,
+          "p5": -0.006,
+          "ic95": [
+            -0.014,
+            0.06
+          ],
+          "no_inferior": true,
+          "equivalente": false
+        },
+        "f1": {
+          "dif": 0.023,
+          "p5": 0.002,
+          "ic95": [
+            -0.001,
+            0.041
+          ],
+          "no_inferior": true,
+          "equivalente": true
+        }
+      }
+    },
+    "validado dejando una fuera": {
+      "cham": {
+        "recall": {
+          "dif": 0.054,
+          "p5": 0.002,
+          "ic95": [
+            -0.013,
+            0.084
+          ],
+          "no_inferior": true,
+          "equivalente": false
+        },
+        "f1": {
+          "dif": 0.039,
+          "p5": 0.023,
+          "ic95": [
+            0.019,
+            0.061
+          ],
+          "no_inferior": true,
+          "equivalente": false
+        }
+      },
+      "pell": {
+        "recall": {
+          "dif": -0.015,
+          "p5": -0.036,
+          "ic95": [
+            -0.04,
+            0.01
+          ],
+          "no_inferior": true,
+          "equivalente": true
+        },
+        "f1": {
+          "dif": 0.007,
+          "p5": -0.014,
+          "ic95": [
+            -0.017,
+            0.035
+          ],
+          "no_inferior": true,
+          "equivalente": true
+        }
+      },
+      "global": {
+        "recall": {
+          "dif": 0.028,
+          "p5": -0.012,
+          "ic95": [
+            -0.019,
+            0.055
+          ],
+          "no_inferior": true,
+          "equivalente": false
+        },
+        "f1": {
+          "dif": 0.028,
+          "p5": 0.011,
+          "ic95": [
+            0.008,
+            0.043
+          ],
+          "no_inferior": true,
+          "equivalente": true
+        }
+      }
+    }
+  },
+  "C_emparejamiento": {
+    "SAT": {
+      "greedy": 971,
+      "hungaro": 1008,
+      "dif": 37
+    },
+    "AMS3D": {
+      "greedy": 924,
+      "hungaro": 960,
+      "dif": 36
+    },
+    "WS": {
+      "greedy": 589,
+      "hungaro": 593,
+      "dif": 4
+    }
+  },
+  "D_region_pellizzano": {
+    "SAT": {
+      "cuadro real de 40 m": {
+        "TP": 367,
+        "ND": 781,
+        "recall": 0.676,
+        "precision": 0.47,
+        "precision_ic": [
+          0.42,
+          0.515
+        ],
+        "f1": 0.554
+      },
+      "casco dilatado 1.5 m": {
+        "TP": 339,
+        "ND": 382,
+        "recall": 0.624,
+        "precision": 0.887,
+        "precision_ic": [
+          0.839,
+          0.93
+        ],
+        "f1": 0.733
+      },
+      "tile entero": {
+        "TP": 367,
+        "ND": 833,
+        "recall": 0.676,
+        "precision": 0.441,
+        "precision_ic": [
+          0.397,
+          0.478
+        ],
+        "f1": 0.533
+      }
+    },
+    "AMS3D": {
+      "cuadro real de 40 m": {
+        "TP": 368,
+        "ND": 477,
+        "recall": 0.678,
+        "precision": 0.771,
+        "precision_ic": [
+          0.727,
+          0.813
+        ],
+        "f1": 0.722
+      },
+      "casco dilatado 1.5 m": {
+        "TP": 349,
+        "ND": 420,
+        "recall": 0.643,
+        "precision": 0.831,
+        "precision_ic": [
+          0.766,
+          0.889
+        ],
+        "f1": 0.725
+      },
+      "tile entero": {
+        "TP": 368,
+        "ND": 477,
+        "recall": 0.678,
+        "precision": 0.771,
+        "precision_ic": [
+          0.727,
+          0.813
+        ],
+        "f1": 0.722
+      }
+    },
+    "WS": {
+      "cuadro real de 40 m": {
+        "TP": 227,
+        "ND": 445,
+        "recall": 0.418,
+        "precision": 0.51,
+        "precision_ic": [
+          0.467,
+          0.549
+        ],
+        "f1": 0.46
+      },
+      "casco dilatado 1.5 m": {
+        "TP": 203,
+        "ND": 205,
+        "recall": 0.374,
+        "precision": 0.99,
+        "precision_ic": [
+          0.976,
+          1.0
+        ],
+        "f1": 0.543
+      },
+      "tile entero": {
+        "TP": 227,
+        "ND": 470,
+        "recall": 0.418,
+        "precision": 0.483,
+        "precision_ic": [
+          0.444,
+          0.518
+        ],
+        "f1": 0.448
+      }
+    }
+  }
+}

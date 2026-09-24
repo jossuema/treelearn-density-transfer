@@ -1,0 +1,26 @@
+{
+  "maquina": {
+    "sistema": "macOS-26.2-arm64-arm-64bit",
+    "python": "3.10.11",
+    "cpu": "Apple M5",
+    "nucleos": 10
+  },
+  "rendimiento": {
+    "WS": 18203675.271739133,
+    "AMS3D": 571.3207237089799,
+    "SAT": 1391.225125
+  },
+  "una_pasada_s": {
+    "WS": 0.2751,
+    "AMS3D": 5860.0199999999995,
+    "SAT": 2922.7000000000003
+  },
+  "configs": {
+    "SAT": 1,
+    "AMS3D": 25,
+    "WS": 16
+  },
+  "puntos_cpu": 3447446,
+  "puntos_gpu": 3775431,
+  "ams_medidas": 22
+}

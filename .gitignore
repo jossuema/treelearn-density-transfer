@@ -1,0 +1,26 @@
+# Los datos de campo y las nubes no se redistribuyen: son de IRSTEA y FEM.
+IRSTEA_dataset/
+trento_dataset/
+AMS/
+*.las
+*.laz
+*.pth
+*.npy
+*.ply
+
+# Salidas de los modelos y datos del visor, que llevan coordenadas
+salida_*/
+viewer/data/
+detecciones_todas.json
+ff3d_evaluacion.json
+arboles.json
+nubes.json
+copas.json
+geo.json
+
+# Ficheros de trabajo
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+registros/

@@ -1,0 +1,246 @@
+{
+  "Chamrousse": {
+    "2.5": {
+      "NR": 894,
+      "ND": 424,
+      "TP": 374,
+      "recall": 0.418,
+      "precision": 0.882,
+      "f1": 0.568,
+      "recall_ic": [
+        0.366,
+        0.482
+      ],
+      "precision_ic": [
+        0.718,
+        0.96
+      ],
+      "f1_ic": [
+        0.499,
+        0.627
+      ]
+    },
+    "3.5": {
+      "NR": 894,
+      "ND": 424,
+      "TP": 387,
+      "recall": 0.433,
+      "precision": 0.913,
+      "f1": 0.587,
+      "recall_ic": [
+        0.388,
+        0.504
+      ],
+      "precision_ic": [
+        0.785,
+        0.972
+      ],
+      "f1_ic": [
+        0.539,
+        0.645
+      ]
+    },
+    "5.0": {
+      "NR": 894,
+      "ND": 424,
+      "TP": 401,
+      "recall": 0.449,
+      "precision": 0.946,
+      "f1": 0.608,
+      "recall_ic": [
+        0.396,
+        0.523
+      ],
+      "precision_ic": [
+        0.87,
+        0.986
+      ],
+      "f1_ic": [
+        0.56,
+        0.661
+      ]
+    },
+    "estratos": {
+      "dominante": {
+        "n": 481,
+        "TP": 303
+      },
+      "intermedio": {
+        "n": 297,
+        "TP": 62
+      },
+      "suprimido": {
+        "n": 116,
+        "TP": 22
+      }
+    },
+    "configs": {
+      "1": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "1b": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "2": {
+        "hmin": 3.0,
+        "mindist": 1.0
+      },
+      "3": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "3b": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "4": {
+        "hmin": 2.0,
+        "mindist": 1.0
+      },
+      "Premol": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      }
+    }
+  },
+  "Pellizzano": {
+    "2.5": {
+      "NR": 543,
+      "ND": 205,
+      "TP": 201,
+      "recall": 0.37,
+      "precision": 0.98,
+      "f1": 0.537,
+      "recall_ic": [
+        0.312,
+        0.453
+      ],
+      "precision_ic": [
+        0.958,
+        1.0
+      ],
+      "f1_ic": [
+        0.473,
+        0.619
+      ]
+    },
+    "3.5": {
+      "NR": 543,
+      "ND": 205,
+      "TP": 203,
+      "recall": 0.374,
+      "precision": 0.99,
+      "f1": 0.543,
+      "recall_ic": [
+        0.313,
+        0.456
+      ],
+      "precision_ic": [
+        0.975,
+        1.0
+      ],
+      "f1_ic": [
+        0.476,
+        0.624
+      ]
+    },
+    "5.0": {
+      "NR": 543,
+      "ND": 205,
+      "TP": 205,
+      "recall": 0.378,
+      "precision": 1.0,
+      "f1": 0.548,
+      "recall_ic": [
+        0.317,
+        0.456
+      ],
+      "precision_ic": [
+        1.0,
+        1.0
+      ],
+      "f1_ic": [
+        0.481,
+        0.626
+      ]
+    },
+    "estratos": {
+      "dominante": {
+        "n": 367,
+        "TP": 193
+      },
+      "intermedio": {
+        "n": 84,
+        "TP": 5
+      },
+      "suprimido": {
+        "n": 92,
+        "TP": 5
+      }
+    },
+    "configs": {
+      "p1": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p2": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p3": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p4": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p5": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p6": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p7": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p8": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p9": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p10": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p11": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p12": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p13": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p14": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      },
+      "p15": {
+        "hmin": 1.0,
+        "mindist": 1.0
+      }
+    }
+  }
+}

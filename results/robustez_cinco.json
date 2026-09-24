@@ -1,0 +1,1126 @@
+{
+  "ajuste_treelite": "t4_p30",
+  "densidad": {
+    "cham/1": {
+      "puntos": 98675,
+      "area": 2449.7,
+      "densidad": 40.3,
+      "arboles": 92
+    },
+    "cham/1b": {
+      "puntos": 31983,
+      "area": 716.8,
+      "densidad": 44.6,
+      "arboles": 36
+    },
+    "cham/2": {
+      "puntos": 93676,
+      "area": 2531.3,
+      "densidad": 37.0,
+      "arboles": 144
+    },
+    "cham/3": {
+      "puntos": 113004,
+      "area": 2305.1,
+      "densidad": 49.0,
+      "arboles": 92
+    },
+    "cham/3b": {
+      "puntos": 33795,
+      "area": 478.6,
+      "densidad": 70.6,
+      "arboles": 39
+    },
+    "cham/4": {
+      "puntos": 82053,
+      "area": 2273.6,
+      "densidad": 36.1,
+      "arboles": 119
+    },
+    "cham/Premol": {
+      "puntos": 331515,
+      "area": 8100.9,
+      "densidad": 40.9,
+      "arboles": 372
+    },
+    "pell/p1": {
+      "puntos": 49606,
+      "area": 533.2,
+      "densidad": 93.0,
+      "arboles": 51
+    },
+    "pell/p2": {
+      "puntos": 57357,
+      "area": 631.8,
+      "densidad": 90.8,
+      "arboles": 71
+    },
+    "pell/p3": {
+      "puntos": 74640,
+      "area": 611.0,
+      "densidad": 122.2,
+      "arboles": 35
+    },
+    "pell/p4": {
+      "puntos": 36379,
+      "area": 383.4,
+      "densidad": 94.9,
+      "arboles": 11
+    },
+    "pell/p5": {
+      "puntos": 92117,
+      "area": 532.6,
+      "densidad": 172.9,
+      "arboles": 21
+    },
+    "pell/p6": {
+      "puntos": 66455,
+      "area": 677.8,
+      "densidad": 98.0,
+      "arboles": 55
+    },
+    "pell/p7": {
+      "puntos": 68522,
+      "area": 635.1,
+      "densidad": 107.9,
+      "arboles": 39
+    },
+    "pell/p8": {
+      "puntos": 103974,
+      "area": 774.8,
+      "densidad": 134.2,
+      "arboles": 85
+    },
+    "pell/p9": {
+      "puntos": 61720,
+      "area": 503.1,
+      "densidad": 122.7,
+      "arboles": 25
+    },
+    "pell/p10": {
+      "puntos": 40728,
+      "area": 293.8,
+      "densidad": 138.6,
+      "arboles": 8
+    },
+    "pell/p11": {
+      "puntos": 75126,
+      "area": 616.0,
+      "densidad": 122.0,
+      "arboles": 33
+    },
+    "pell/p12": {
+      "puntos": 53170,
+      "area": 561.0,
+      "densidad": 94.8,
+      "arboles": 21
+    },
+    "pell/p13": {
+      "puntos": 69227,
+      "area": 627.9,
+      "densidad": 110.3,
+      "arboles": 33
+    },
+    "pell/p14": {
+      "puntos": 83936,
+      "area": 521.8,
+      "densidad": 160.9,
+      "arboles": 20
+    },
+    "pell/p15": {
+      "puntos": 78205,
+      "area": 721.0,
+      "densidad": 108.5,
+      "arboles": 35
+    }
+  },
+  "principal": {
+    "Chamrousse": {
+      "SAT": {
+        "TP": 632,
+        "ND": 774,
+        "NR": 894,
+        "recall": 0.707,
+        "precision": 0.817,
+        "f1": 0.758,
+        "recall_ic": [
+          0.63,
+          0.765
+        ],
+        "precision_ic": [
+          0.739,
+          0.869
+        ],
+        "f1_ic": [
+          0.692,
+          0.799
+        ]
+      },
+      "AMS3D": {
+        "TP": 575,
+        "ND": 690,
+        "NR": 894,
+        "recall": 0.643,
+        "precision": 0.833,
+        "f1": 0.726,
+        "recall_ic": [
+          0.569,
+          0.709
+        ],
+        "precision_ic": [
+          0.762,
+          0.888
+        ],
+        "f1_ic": [
+          0.673,
+          0.766
+        ]
+      },
+      "FF3D": {
+        "TP": 536,
+        "ND": 637,
+        "NR": 894,
+        "recall": 0.6,
+        "precision": 0.841,
+        "f1": 0.7,
+        "recall_ic": [
+          0.479,
+          0.657
+        ],
+        "precision_ic": [
+          0.733,
+          0.898
+        ],
+        "f1_ic": [
+          0.583,
+          0.746
+        ]
+      },
+      "TreeLite3D": {
+        "TP": 442,
+        "ND": 593,
+        "NR": 894,
+        "recall": 0.494,
+        "precision": 0.745,
+        "f1": 0.594,
+        "recall_ic": [
+          0.424,
+          0.598
+        ],
+        "precision_ic": [
+          0.66,
+          0.846
+        ],
+        "f1_ic": [
+          0.559,
+          0.637
+        ]
+      },
+      "WS": {
+        "TP": 386,
+        "ND": 424,
+        "NR": 894,
+        "recall": 0.432,
+        "precision": 0.91,
+        "f1": 0.586,
+        "recall_ic": [
+          0.383,
+          0.496
+        ],
+        "precision_ic": [
+          0.785,
+          0.973
+        ],
+        "f1_ic": [
+          0.532,
+          0.639
+        ]
+      }
+    },
+    "Pellizzano": {
+      "SAT": {
+        "TP": 339,
+        "ND": 382,
+        "NR": 543,
+        "recall": 0.624,
+        "precision": 0.887,
+        "f1": 0.733,
+        "recall_ic": [
+          0.542,
+          0.734
+        ],
+        "precision_ic": [
+          0.839,
+          0.93
+        ],
+        "f1_ic": [
+          0.68,
+          0.793
+        ]
+      },
+      "AMS3D": {
+        "TP": 349,
+        "ND": 420,
+        "NR": 543,
+        "recall": 0.643,
+        "precision": 0.831,
+        "f1": 0.725,
+        "recall_ic": [
+          0.567,
+          0.74
+        ],
+        "precision_ic": [
+          0.766,
+          0.889
+        ],
+        "f1_ic": [
+          0.678,
+          0.778
+        ]
+      },
+      "FF3D": {
+        "TP": 342,
+        "ND": 408,
+        "NR": 543,
+        "recall": 0.63,
+        "precision": 0.838,
+        "f1": 0.719,
+        "recall_ic": [
+          0.558,
+          0.739
+        ],
+        "precision_ic": [
+          0.766,
+          0.899
+        ],
+        "f1_ic": [
+          0.676,
+          0.77
+        ]
+      },
+      "TreeLite3D": {
+        "TP": 368,
+        "ND": 576,
+        "NR": 543,
+        "recall": 0.678,
+        "precision": 0.639,
+        "f1": 0.658,
+        "recall_ic": [
+          0.607,
+          0.746
+        ],
+        "precision_ic": [
+          0.557,
+          0.715
+        ],
+        "f1_ic": [
+          0.615,
+          0.694
+        ]
+      },
+      "WS": {
+        "TP": 203,
+        "ND": 205,
+        "NR": 543,
+        "recall": 0.374,
+        "precision": 0.99,
+        "f1": 0.543,
+        "recall_ic": [
+          0.317,
+          0.456
+        ],
+        "precision_ic": [
+          0.976,
+          1.0
+        ],
+        "f1_ic": [
+          0.48,
+          0.625
+        ]
+      }
+    },
+    "Ambos": {
+      "SAT": {
+        "TP": 971,
+        "ND": 1156,
+        "NR": 1437,
+        "recall": 0.676,
+        "precision": 0.84,
+        "f1": 0.749,
+        "recall_ic": [
+          0.605,
+          0.727
+        ],
+        "precision_ic": [
+          0.796,
+          0.884
+        ],
+        "f1_ic": [
+          0.703,
+          0.781
+        ]
+      },
+      "AMS3D": {
+        "TP": 924,
+        "ND": 1110,
+        "NR": 1437,
+        "recall": 0.643,
+        "precision": 0.832,
+        "f1": 0.726,
+        "recall_ic": [
+          0.59,
+          0.694
+        ],
+        "precision_ic": [
+          0.783,
+          0.873
+        ],
+        "f1_ic": [
+          0.69,
+          0.757
+        ]
+      },
+      "FF3D": {
+        "TP": 878,
+        "ND": 1045,
+        "NR": 1437,
+        "recall": 0.611,
+        "precision": 0.84,
+        "f1": 0.707,
+        "recall_ic": [
+          0.539,
+          0.664
+        ],
+        "precision_ic": [
+          0.775,
+          0.882
+        ],
+        "f1_ic": [
+          0.644,
+          0.744
+        ]
+      },
+      "TreeLite3D": {
+        "TP": 810,
+        "ND": 1169,
+        "NR": 1437,
+        "recall": 0.564,
+        "precision": 0.693,
+        "f1": 0.622,
+        "recall_ic": [
+          0.506,
+          0.667
+        ],
+        "precision_ic": [
+          0.624,
+          0.752
+        ],
+        "f1_ic": [
+          0.594,
+          0.659
+        ]
+      },
+      "WS": {
+        "TP": 589,
+        "ND": 629,
+        "NR": 1437,
+        "recall": 0.41,
+        "precision": 0.936,
+        "f1": 0.57,
+        "recall_ic": [
+          0.366,
+          0.452
+        ],
+        "precision_ic": [
+          0.855,
+          0.982
+        ],
+        "f1_ic": [
+          0.525,
+          0.61
+        ]
+      }
+    }
+  },
+  "emparejamiento": {
+    "SAT": {
+      "greedy": 971,
+      "hungaro": 1008,
+      "dif": 37,
+      "recall_greedy": 0.676,
+      "recall_hungaro": 0.701
+    },
+    "AMS3D": {
+      "greedy": 924,
+      "hungaro": 960,
+      "dif": 36,
+      "recall_greedy": 0.643,
+      "recall_hungaro": 0.668
+    },
+    "FF3D": {
+      "greedy": 878,
+      "hungaro": 908,
+      "dif": 30,
+      "recall_greedy": 0.611,
+      "recall_hungaro": 0.632
+    },
+    "TreeLite3D": {
+      "greedy": 810,
+      "hungaro": 869,
+      "dif": 59,
+      "recall_greedy": 0.564,
+      "recall_hungaro": 0.605
+    },
+    "WS": {
+      "greedy": 589,
+      "hungaro": 593,
+      "dif": 4,
+      "recall_greedy": 0.41,
+      "recall_hungaro": 0.413
+    }
+  },
+  "region": {
+    "SAT": {
+      "casco +0 m": {
+        "TP": 848,
+        "ND": 992,
+        "recall": 0.59,
+        "precision": 0.855,
+        "f1": 0.698
+      },
+      "casco +1,5 m": {
+        "TP": 971,
+        "ND": 1156,
+        "recall": 0.676,
+        "precision": 0.84,
+        "f1": 0.749
+      },
+      "casco +3 m": {
+        "TP": 999,
+        "ND": 1268,
+        "recall": 0.695,
+        "precision": 0.788,
+        "f1": 0.739
+      },
+      "tile entero": {
+        "TP": 1010,
+        "ND": 2395,
+        "recall": 0.703,
+        "precision": 0.422,
+        "f1": 0.527
+      }
+    },
+    "AMS3D": {
+      "casco +0 m": {
+        "TP": 800,
+        "ND": 940,
+        "recall": 0.557,
+        "precision": 0.851,
+        "f1": 0.673
+      },
+      "casco +1,5 m": {
+        "TP": 924,
+        "ND": 1110,
+        "recall": 0.643,
+        "precision": 0.832,
+        "f1": 0.726
+      },
+      "casco +3 m": {
+        "TP": 952,
+        "ND": 1190,
+        "recall": 0.662,
+        "precision": 0.8,
+        "f1": 0.725
+      },
+      "tile entero": {
+        "TP": 955,
+        "ND": 1241,
+        "recall": 0.665,
+        "precision": 0.77,
+        "f1": 0.713
+      }
+    },
+    "FF3D": {
+      "casco +0 m": {
+        "TP": 767,
+        "ND": 899,
+        "recall": 0.534,
+        "precision": 0.853,
+        "f1": 0.657
+      },
+      "casco +1,5 m": {
+        "TP": 878,
+        "ND": 1045,
+        "recall": 0.611,
+        "precision": 0.84,
+        "f1": 0.707
+      },
+      "casco +3 m": {
+        "TP": 909,
+        "ND": 1146,
+        "recall": 0.633,
+        "precision": 0.793,
+        "f1": 0.704
+      },
+      "tile entero": {
+        "TP": 917,
+        "ND": 2158,
+        "recall": 0.638,
+        "precision": 0.425,
+        "f1": 0.51
+      }
+    },
+    "TreeLite3D": {
+      "casco +0 m": {
+        "TP": 717,
+        "ND": 996,
+        "recall": 0.499,
+        "precision": 0.72,
+        "f1": 0.589
+      },
+      "casco +1,5 m": {
+        "TP": 810,
+        "ND": 1169,
+        "recall": 0.564,
+        "precision": 0.693,
+        "f1": 0.622
+      },
+      "casco +3 m": {
+        "TP": 846,
+        "ND": 1325,
+        "recall": 0.589,
+        "precision": 0.638,
+        "f1": 0.613
+      },
+      "tile entero": {
+        "TP": 857,
+        "ND": 2335,
+        "recall": 0.596,
+        "precision": 0.367,
+        "f1": 0.454
+      }
+    },
+    "WS": {
+      "casco +0 m": {
+        "TP": 501,
+        "ND": 530,
+        "recall": 0.349,
+        "precision": 0.945,
+        "f1": 0.509
+      },
+      "casco +1,5 m": {
+        "TP": 589,
+        "ND": 629,
+        "recall": 0.41,
+        "precision": 0.936,
+        "f1": 0.57
+      },
+      "casco +3 m": {
+        "TP": 620,
+        "ND": 676,
+        "recall": 0.431,
+        "precision": 0.917,
+        "f1": 0.587
+      },
+      "tile entero": {
+        "TP": 633,
+        "ND": 1368,
+        "recall": 0.441,
+        "precision": 0.463,
+        "f1": 0.451
+      }
+    }
+  },
+  "distancia": {
+    "SAT": {
+      "2.5": {
+        "recall": 0.635,
+        "precision": 0.79,
+        "f1": 0.704
+      },
+      "3.5": {
+        "recall": 0.676,
+        "precision": 0.84,
+        "f1": 0.749
+      },
+      "5.0": {
+        "recall": 0.709,
+        "precision": 0.881,
+        "f1": 0.786
+      }
+    },
+    "AMS3D": {
+      "2.5": {
+        "recall": 0.607,
+        "precision": 0.786,
+        "f1": 0.685
+      },
+      "3.5": {
+        "recall": 0.643,
+        "precision": 0.832,
+        "f1": 0.726
+      },
+      "5.0": {
+        "recall": 0.682,
+        "precision": 0.883,
+        "f1": 0.77
+      }
+    },
+    "FF3D": {
+      "2.5": {
+        "recall": 0.565,
+        "precision": 0.777,
+        "f1": 0.654
+      },
+      "3.5": {
+        "recall": 0.611,
+        "precision": 0.84,
+        "f1": 0.707
+      },
+      "5.0": {
+        "recall": 0.653,
+        "precision": 0.898,
+        "f1": 0.756
+      }
+    },
+    "TreeLite3D": {
+      "2.5": {
+        "recall": 0.502,
+        "precision": 0.618,
+        "f1": 0.554
+      },
+      "3.5": {
+        "recall": 0.564,
+        "precision": 0.693,
+        "f1": 0.622
+      },
+      "5.0": {
+        "recall": 0.619,
+        "precision": 0.76,
+        "f1": 0.682
+      }
+    },
+    "WS": {
+      "2.5": {
+        "recall": 0.399,
+        "precision": 0.911,
+        "f1": 0.555
+      },
+      "3.5": {
+        "recall": 0.41,
+        "precision": 0.936,
+        "f1": 0.57
+      },
+      "5.0": {
+        "recall": 0.42,
+        "precision": 0.96,
+        "f1": 0.585
+      }
+    }
+  },
+  "densidad_vs_acierto": {
+    "SAT": {
+      "rho": 0.155,
+      "p": 0.4952
+    },
+    "AMS3D": {
+      "rho": 0.307,
+      "p": 0.1608,
+      "rho_dif": -0.474,
+      "p_dif": 0.0267,
+      "dif_media": 0.012
+    },
+    "FF3D": {
+      "rho": 0.441,
+      "p": 0.0412,
+      "rho_dif": -0.654,
+      "p_dif": 0.0018,
+      "dif_media": 0.039
+    },
+    "TreeLite3D": {
+      "rho": 0.745,
+      "p": 0.0002,
+      "rho_dif": -0.497,
+      "p_dif": 0.0169,
+      "dif_media": 0.049
+    },
+    "WS": {
+      "rho": 0.182,
+      "p": 0.4172,
+      "rho_dif": -0.072,
+      "p_dif": 0.7508,
+      "dif_media": 0.257
+    }
+  },
+  "por_parcela": {
+    "cham/1": {
+      "SAT": 0.543,
+      "AMS3D": 0.587,
+      "FF3D": 0.315,
+      "TreeLite3D": 0.554,
+      "WS": 0.424
+    },
+    "cham/1b": {
+      "SAT": 0.75,
+      "AMS3D": 0.639,
+      "FF3D": 0.444,
+      "TreeLite3D": 0.583,
+      "WS": 0.528
+    },
+    "cham/2": {
+      "SAT": 0.604,
+      "AMS3D": 0.493,
+      "FF3D": 0.562,
+      "TreeLite3D": 0.361,
+      "WS": 0.333
+    },
+    "cham/3": {
+      "SAT": 0.837,
+      "AMS3D": 0.793,
+      "FF3D": 0.717,
+      "TreeLite3D": 0.739,
+      "WS": 0.576
+    },
+    "cham/3b": {
+      "SAT": 0.744,
+      "AMS3D": 0.718,
+      "FF3D": 0.667,
+      "TreeLite3D": 0.59,
+      "WS": 0.359
+    },
+    "cham/4": {
+      "SAT": 0.773,
+      "AMS3D": 0.697,
+      "FF3D": 0.613,
+      "TreeLite3D": 0.387,
+      "WS": 0.479
+    },
+    "cham/Premol": {
+      "SAT": 0.726,
+      "AMS3D": 0.653,
+      "FF3D": 0.659,
+      "TreeLite3D": 0.487,
+      "WS": 0.419
+    },
+    "pell/p1": {
+      "SAT": 0.431,
+      "AMS3D": 0.627,
+      "FF3D": 0.471,
+      "TreeLite3D": 0.569,
+      "WS": 0.216
+    },
+    "pell/p2": {
+      "SAT": 0.437,
+      "AMS3D": 0.423,
+      "FF3D": 0.493,
+      "TreeLite3D": 0.437,
+      "WS": 0.254
+    },
+    "pell/p3": {
+      "SAT": 0.8,
+      "AMS3D": 0.771,
+      "FF3D": 0.771,
+      "TreeLite3D": 0.657,
+      "WS": 0.457
+    },
+    "pell/p4": {
+      "SAT": 1.0,
+      "AMS3D": 1.0,
+      "FF3D": 0.909,
+      "TreeLite3D": 0.636,
+      "WS": 0.727
+    },
+    "pell/p5": {
+      "SAT": 0.857,
+      "AMS3D": 0.952,
+      "FF3D": 1.0,
+      "TreeLite3D": 0.762,
+      "WS": 0.714
+    },
+    "pell/p6": {
+      "SAT": 0.691,
+      "AMS3D": 0.727,
+      "FF3D": 0.618,
+      "TreeLite3D": 0.691,
+      "WS": 0.4
+    },
+    "pell/p7": {
+      "SAT": 0.359,
+      "AMS3D": 0.41,
+      "FF3D": 0.462,
+      "TreeLite3D": 0.641,
+      "WS": 0.282
+    },
+    "pell/p8": {
+      "SAT": 0.518,
+      "AMS3D": 0.529,
+      "FF3D": 0.471,
+      "TreeLite3D": 0.729,
+      "WS": 0.259
+    },
+    "pell/p9": {
+      "SAT": 0.8,
+      "AMS3D": 0.8,
+      "FF3D": 0.88,
+      "TreeLite3D": 0.64,
+      "WS": 0.36
+    },
+    "pell/p10": {
+      "SAT": 0.625,
+      "AMS3D": 0.625,
+      "FF3D": 0.625,
+      "TreeLite3D": 0.875,
+      "WS": 0.625
+    },
+    "pell/p11": {
+      "SAT": 0.667,
+      "AMS3D": 0.606,
+      "FF3D": 0.636,
+      "TreeLite3D": 0.788,
+      "WS": 0.455
+    },
+    "pell/p12": {
+      "SAT": 1.0,
+      "AMS3D": 0.81,
+      "FF3D": 1.0,
+      "TreeLite3D": 0.81,
+      "WS": 0.524
+    },
+    "pell/p13": {
+      "SAT": 0.667,
+      "AMS3D": 0.758,
+      "FF3D": 0.636,
+      "TreeLite3D": 0.788,
+      "WS": 0.485
+    },
+    "pell/p14": {
+      "SAT": 0.85,
+      "AMS3D": 0.85,
+      "FF3D": 0.9,
+      "TreeLite3D": 0.8,
+      "WS": 0.5
+    },
+    "pell/p15": {
+      "SAT": 0.743,
+      "AMS3D": 0.686,
+      "FF3D": 0.714,
+      "TreeLite3D": 0.829,
+      "WS": 0.4
+    }
+  },
+  "estratos": {
+    "Chamrousse": {
+      "dominante": {
+        "n": 481,
+        "SAT": {
+          "TP": 406,
+          "recall": 0.844
+        },
+        "AMS3D": {
+          "TP": 371,
+          "recall": 0.771
+        },
+        "FF3D": {
+          "TP": 344,
+          "recall": 0.715
+        },
+        "TreeLite3D": {
+          "TP": 312,
+          "recall": 0.649
+        },
+        "WS": {
+          "TP": 296,
+          "recall": 0.615
+        }
+      },
+      "intermedio": {
+        "n": 297,
+        "SAT": {
+          "TP": 172,
+          "recall": 0.579
+        },
+        "AMS3D": {
+          "TP": 154,
+          "recall": 0.519
+        },
+        "FF3D": {
+          "TP": 145,
+          "recall": 0.488
+        },
+        "TreeLite3D": {
+          "TP": 88,
+          "recall": 0.296
+        },
+        "WS": {
+          "TP": 63,
+          "recall": 0.212
+        }
+      },
+      "suprimido": {
+        "n": 116,
+        "SAT": {
+          "TP": 54,
+          "recall": 0.466
+        },
+        "AMS3D": {
+          "TP": 50,
+          "recall": 0.431
+        },
+        "FF3D": {
+          "TP": 47,
+          "recall": 0.405
+        },
+        "TreeLite3D": {
+          "TP": 42,
+          "recall": 0.362
+        },
+        "WS": {
+          "TP": 27,
+          "recall": 0.233
+        }
+      }
+    },
+    "Pellizzano": {
+      "dominante": {
+        "n": 367,
+        "SAT": {
+          "TP": 278,
+          "recall": 0.757
+        },
+        "AMS3D": {
+          "TP": 279,
+          "recall": 0.76
+        },
+        "FF3D": {
+          "TP": 282,
+          "recall": 0.768
+        },
+        "TreeLite3D": {
+          "TP": 274,
+          "recall": 0.747
+        },
+        "WS": {
+          "TP": 188,
+          "recall": 0.512
+        }
+      },
+      "intermedio": {
+        "n": 84,
+        "SAT": {
+          "TP": 41,
+          "recall": 0.488
+        },
+        "AMS3D": {
+          "TP": 40,
+          "recall": 0.476
+        },
+        "FF3D": {
+          "TP": 30,
+          "recall": 0.357
+        },
+        "TreeLite3D": {
+          "TP": 49,
+          "recall": 0.583
+        },
+        "WS": {
+          "TP": 8,
+          "recall": 0.095
+        }
+      },
+      "suprimido": {
+        "n": 92,
+        "SAT": {
+          "TP": 20,
+          "recall": 0.217
+        },
+        "AMS3D": {
+          "TP": 30,
+          "recall": 0.326
+        },
+        "FF3D": {
+          "TP": 30,
+          "recall": 0.326
+        },
+        "TreeLite3D": {
+          "TP": 45,
+          "recall": 0.489
+        },
+        "WS": {
+          "TP": 7,
+          "recall": 0.076
+        }
+      }
+    },
+    "Ambos": {
+      "dominante": {
+        "n": 848,
+        "SAT": {
+          "TP": 684,
+          "recall": 0.807
+        },
+        "AMS3D": {
+          "TP": 650,
+          "recall": 0.767
+        },
+        "FF3D": {
+          "TP": 626,
+          "recall": 0.738
+        },
+        "TreeLite3D": {
+          "TP": 586,
+          "recall": 0.691
+        },
+        "WS": {
+          "TP": 484,
+          "recall": 0.571
+        }
+      },
+      "intermedio": {
+        "n": 381,
+        "SAT": {
+          "TP": 213,
+          "recall": 0.559
+        },
+        "AMS3D": {
+          "TP": 194,
+          "recall": 0.509
+        },
+        "FF3D": {
+          "TP": 175,
+          "recall": 0.459
+        },
+        "TreeLite3D": {
+          "TP": 137,
+          "recall": 0.36
+        },
+        "WS": {
+          "TP": 71,
+          "recall": 0.186
+        }
+      },
+      "suprimido": {
+        "n": 208,
+        "SAT": {
+          "TP": 74,
+          "recall": 0.356
+        },
+        "AMS3D": {
+          "TP": 80,
+          "recall": 0.385
+        },
+        "FF3D": {
+          "TP": 77,
+          "recall": 0.37
+        },
+        "TreeLite3D": {
+          "TP": 87,
+          "recall": 0.418
+        },
+        "WS": {
+          "TP": 34,
+          "recall": 0.163
+        }
+      }
+    }
+  }
+}
