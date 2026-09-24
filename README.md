@@ -1,7 +1,9 @@
 # Density robustness and the transfer of pretrained 3-D networks to airborne LiDAR
 
 Evaluation code for the letter *Density Robustness Governs the Transfer of Pretrained 3-D
-Networks to Individual Tree Detection in Airborne LiDAR*, currently under review.
+Networks to Individual Tree Detection in Airborne LiDAR*, by Manuel Josue Malla
+Campoverde, Walter Andres Osorio Tinitana and Eduardo Tusa (Universidad Tecnica de
+Machala).
 
 Five individual tree detection methods are scored on 22 alpine ALS plots against field
 inventory, under a single evaluator: three public pretrained networks
@@ -58,5 +60,4 @@ TreeLite3D's linking radius and minimum proposal size were swept, and the sweep 
 
 ## Licence
 
-Code released under the MIT licence (`LICENSE`). The data are not covered by it. The
-copyright holders are named once the manuscript is out of review.
+Code released under the MIT licence (`LICENSE`). The data are not covered by it.
