@@ -85,32 +85,43 @@ def inst_tl(sitio, p):
 
 fig = plt.figure(figsize=(7.16, 3.62))
 gsa = fig.add_gridspec(1, 2, width_ratios=[1, 1.35], wspace=0.30,
-                       left=0.075, right=0.985, top=0.955, bottom=0.690)
+                       left=0.075, right=0.985, top=0.950, bottom=0.720)
 gsb = fig.add_gridspec(1, 4, wspace=-0.02, left=0.005, right=0.995, top=0.480,
                        bottom=0.055)
 
-# ------------------------------------------ (a) pendiente entre el sitio ralo y el denso
+# --------------------- (a) submuestreo controlado: se quitan pulsos y se vuelve a correr
+# Es una manipulacion, no una correlacion: las mismas 15 parcelas de Pellizzano, el mismo
+# sensor, el mismo rodal y el mismo inventario. Lo unico que cambia es la densidad.
 a = fig.add_subplot(gsa[0, 0])
-rng = np.random.default_rng(0)
-fin_ = {m: rec[m][~cham].mean() for m in MET}
-sep = {}
-for i, m in enumerate(sorted(MET, key=lambda x: -fin_[x])):
-    sep[m] = fin_[m] + (0.048 * (1 - i)) if abs(fin_[m] - 0.70) < .03 else fin_[m]
-for m in MET:
-    for s, xx in ((cham, 0), (~cham, 1)):
-        a.scatter(xx + rng.uniform(-.055, .055, s.sum()), rec[m][s], s=5,
-                  color=COL[m], alpha=.22, lw=0, zorder=1)
-    a.plot([0, 1], [rec[m][cham].mean(), fin_[m]], marker="o", ms=4.4, color=COL[m],
-           lw=1.9, zorder=3)
-    a.annotate(ETI[m], xy=(1, fin_[m]), xytext=(1.10, sep[m]), fontsize=5.9,
-               color=COL[m], va="center",
-               arrowprops=dict(arrowstyle="-", lw=.5, color=COL[m], alpha=.6)
-               if abs(sep[m] - fin_[m]) > 1e-9 else None)
-a.set_xlim(-.18, 2.12); a.set_xticks([0, 1])
-a.set_xticklabels(["Chamrousse\n36--71 pts/m$^2$", "Pellizzano\n91--173"], fontsize=6.2)
-a.set_ylabel("Plot recall", fontsize=7); a.set_ylim(0.20, 1.03)
-a.set_title("(a) Plot recall at each site", fontsize=7.5, loc="left")
-a.grid(axis="y", lw=.3, color="0.9"); a.set_axisbelow(True); a.tick_params(labelsize=6)
+SUB = {m: json.load(open(os.path.join(R, f"submuestreo_{f}.json")))
+       for m, f in (("SAT", "SAT"), ("TreeLite3D", "t4_p30"))
+       if os.path.exists(os.path.join(R, f"submuestreo_{f}.json"))}
+if os.path.exists(os.path.join(R, "submuestreo_FF3D.json")):
+    SUB["FF3D"] = json.load(open(os.path.join(R, "submuestreo_FF3D.json")))
+DENS = json.load(open(os.path.join(R, "submuestreo_densidades.json")))
+FR = ["100", "60", "40", "25"]
+xs = [DENS[f] for f in FR]
+# la banda marca el rango de densidad en el que caen las parcelas de Chamrousse
+cd = [B["densidad"][k]["densidad"] for k in B["densidad"] if k.startswith("cham")]
+a.axvspan(min(cd), max(cd), color="0.92", zorder=0, lw=0)
+a.text((min(cd) + max(cd)) / 2, 0.055, "Chamrousse\nrange", fontsize=5.4, ha="center",
+       color="0.45", va="bottom")
+ORD = [m for m in ("SAT", "FF3D", "TreeLite3D") if m in SUB]
+for j, m in enumerate(ORD):
+    v = SUB[m]
+    y = [v[f]["recall"] for f in FR]
+    lo = [v[f]["ic"][0] for f in FR]
+    hi = [v[f]["ic"][1] for f in FR]
+    a.fill_between(xs, lo, hi, color=COL[m], alpha=.13, lw=0, zorder=1)
+    a.plot(xs, y, marker=MRK[m], ms=4.2, color=COL[m], lw=1.9, zorder=3, label=ETI[m])
+    # apiladas en la esquina libre: las curvas se cruzan y no cabe etiquetarlas al lado
+    a.text(.985, .045 + .085 * (len(ORD) - 1 - j), ETI[m], transform=a.transAxes,
+           fontsize=5.9, color=COL[m], ha="right", va="bottom")
+a.set_xlabel("Return density after removing pulses (pts/m$^2$)", fontsize=7)
+a.set_ylabel("Plot recall", fontsize=7)
+a.set_xlim(20, 128); a.set_ylim(0, .82)
+a.set_title("(a) The same 15 plots, thinned", fontsize=7.5, loc="left")
+a.grid(lw=.3, color="0.9"); a.set_axisbelow(True); a.tick_params(labelsize=6)
 
 # ------------------------------------------------------- (b) barras por estrato
 c = fig.add_subplot(gsa[0, 1])
@@ -157,7 +168,7 @@ for i, (sitio, pp, tit) in enumerate(P3D):
         ax.text2D(.5, .015, f"{v['TP']} of {v['NR']} found, recall {v['recall']:.3f}",
                   transform=ax.transAxes, fontsize=6.1, ha="center", color="0.25")
     fig.text(.145 + i * .5, .505, tit, fontsize=7.2)
-fig.text(.006, .578, "(c) Returns coloured by the instance each model predicted",
+fig.text(.006, .585, "(c) Returns coloured by the instance each model predicted",
          fontsize=7.5)
 
 fig.savefig("fig1.pdf", dpi=400); fig.savefig("fig1.png", dpi=250)

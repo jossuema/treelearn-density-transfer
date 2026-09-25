@@ -58,9 +58,10 @@ def correr(nombres):
       os.makedirs(OUT, exist_ok=True)
       for f in glob.glob(os.path.join(IN, "*")):
         os.remove(f) if os.path.isfile(f) else shutil.rmtree(f, ignore_errors=True)
-      shutil.copy(f"/entradas/{nombre}", os.path.join(IN, nombre))
+      base = os.path.basename(nombre)
+      shutil.copy(f"/entradas/{nombre}", os.path.join(IN, base))
       print(f"[{idx+1}/{len(nombres)}] entrada: {nombre}, "
-            f"{os.path.getsize(os.path.join(IN, nombre))/1e6:.1f} MB", flush=True)
+            f"{os.path.getsize(os.path.join(IN, base))/1e6:.1f} MB", flush=True)
 
       env = {**os.environ,
              "MODEL_PATH": "/pesos/clean_forestformer/epoch_3000_fix.pth",
@@ -80,7 +81,7 @@ def correr(nombres):
         for a in archivos:
             pth = os.path.join(raiz, a)
             producidos.append((os.path.relpath(pth, OUT), os.path.getsize(pth)))
-            shutil.copy(pth, f"/salidas/{nombre.replace('.las','')}__{a}")
+            shutil.copy(pth, f"/salidas/{base.replace('.las','')}__{a}")
       salidas.commit()
       resultados.append({"parcela": nombre, "segundos": round(dt, 1),
                          "codigo": r.returncode, "archivos": producidos})
@@ -89,9 +90,14 @@ def correr(nombres):
 
 
 @app.local_entrypoint()
-def main(todas: bool = False):
+def main(todas: bool = False, nombres: str = "", tandas_n: int = 4):
     import json
-    if todas:
+    if nombres:
+        lista = [n.strip() for n in nombres.split(",") if n.strip()]
+        print(f"{len(lista)} nubes: {lista[:3]} ...")
+        tandas = [lista[i::tandas_n] for i in range(tandas_n)]
+        res = [x for t in correr.map(tandas) for x in t]
+    elif todas:
         nombres = sorted(f.path.lstrip("/") for f in entradas.listdir("/")
                          if f.path.endswith(".las"))
         print(f"{len(nombres)} parcelas: {nombres}")

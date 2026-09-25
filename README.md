@@ -1,14 +1,16 @@
 # Density robustness and the transfer of pretrained 3-D networks to airborne LiDAR
 
-Evaluation code for the letter *Density Robustness Governs the Transfer of Pretrained 3-D
-Networks to Individual Tree Detection in Airborne LiDAR*, by Manuel Josue Malla
+Evaluation code for the letter *Comparison of Pretrained 3-D Networks and Tuned Classical
+Methods for Individual Tree Detection in Temperate Forest*, by Manuel Josue Malla
 Campoverde, Walter Andres Osorio Tinitana and Eduardo Tusa (Universidad Tecnica de
 Machala).
 
 Five individual tree detection methods are scored on 22 alpine ALS plots against field
 inventory, under a single evaluator: three public pretrained networks
 (SegmentAnyTree, ForestFormer3D, TreeLite3D) and two per-plot tuned classical baselines
-(an adaptive 3-D mean shift and a canopy height model watershed).
+(an adaptive 3-D mean shift and a canopy height model watershed). A controlled thinning
+experiment then removes laser pulses from the dense site and re-runs the three networks,
+so that density changes while site, sensor, stand and inventory stay fixed.
 
 ## What is and is not here
 
@@ -47,6 +49,25 @@ python3 analysis/comparacion_modelos.py # paired differences against SegmentAnyT
 python3 figures/figuras.py              # figure 1
 python3 figures/tablas.py               # the LaTeX tables
 ```
+
+The thinning experiment, in order. The first step writes the thinned clouds, the networks
+are then re-run on them with the same runners as above, and the last three score the
+result against the same inventory and the same protocol:
+
+```
+python3 modal/submuestrear.py                 # removes pulses: 60, 40 and 25 % kept
+python3 analysis/submuestreo_densidades.py    # density of every cloud, one definition
+python3 analysis/sat_submuestreo.py           # SegmentAnyTree detections
+python3 analysis/ff3d_submuestreo.py          # ForestFormer3D detections
+python3 analysis/submuestreo_eval.py SAT      # and FF3D, and t4_p30 for TreeLite3D
+```
+
+Pulses are removed rather than points, so that the returns of one pulse stay together,
+and the levels are nested draws of a single seeded permutation, so that they differ only
+by what is removed. Density is always measured the same way, on the cloud the model
+actually received: points inside the scored region divided by the area of that region.
+Never from a model's output, since the networks differ in whether they keep ground
+returns.
 
 Every number in the letter's tables is generated from `results/` by `figures/tablas.py`;
 none is typed by hand.
