@@ -1,0 +1,10 @@
+numpy<2
+scipy
+laspy
+lazrs
+matplotlib
+shapely
+scikit-image
+modal
+ipykernel
+pillow

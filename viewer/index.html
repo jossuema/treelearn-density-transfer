@@ -1,0 +1,1767 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeLearn viewer</title>
+<style>
+:root{
+  --bg:#f7f7f5; --panel:#ffffff; --line:#e2e0da; --text:#1c1b19; --muted:#6f6b63;
+  --accent:#1b3b6f; --sat:#1b3b6f; --ams:#d1701a; --ws:#7a8b7f;
+  --ff3d:#2e7d5b; --tl3d:#8e44ad;
+  --ok:#1f7a5a; --fail:#c2402a; --fp:#8a6bbf; --sel:#111;
+  --canvas:#efeee9;
+}
+:root[data-theme="dark"]{
+  --bg:#15161a; --panel:#1c1e23; --line:#2e3138; --text:#e8e6e1; --muted:#98948c;
+  --accent:#6f9bd8; --sat:#6f9bd8; --ams:#e8964a; --ws:#9db0a4;
+  --ff3d:#4aa87d; --tl3d:#b07fd6;
+  --ok:#49b58c; --fail:#e2705a; --fp:#ab8ee0; --sel:#fff;
+  --canvas:#101216;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  overflow:hidden;
+}
+button,select,input{font:inherit;color:inherit}
+
+/* ---------------------------------------------------------------- structure */
+#app{display:grid;grid-template-rows:auto 1fr;height:100%}
+header{
+  display:flex;align-items:center;gap:14px;padding:8px 14px;
+  background:var(--panel);border-bottom:1px solid var(--line);
+}
+header h1{font-size:14px;font-weight:650;margin:0;letter-spacing:-.01em}
+header h1 span{color:var(--muted);font-weight:400}
+.tabs{display:flex;gap:2px;margin-left:8px}
+.tabs button{
+  background:none;border:0;padding:5px 12px;border-radius:6px;cursor:pointer;
+  color:var(--muted);font-weight:550;
+}
+.tabs button:hover{background:var(--bg)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#fff}
+.grow{flex:1}
+.iconbtn{
+  background:var(--bg);border:1px solid var(--line);border-radius:6px;
+  padding:4px 9px;cursor:pointer;color:var(--muted);
+}
+.iconbtn:hover{border-color:var(--muted);color:var(--text)}
+
+#body{display:grid;grid-template-columns:206px 1fr 274px;overflow:hidden}
+#body.single{grid-template-columns:1fr}
+aside{
+  background:var(--panel);overflow-y:auto;padding:10px;
+  border-right:1px solid var(--line);
+}
+aside.right{border-right:0;border-left:1px solid var(--line)}
+main{position:relative;overflow:hidden;background:var(--canvas)}
+canvas{display:block;width:100%;height:100%}
+
+/* ---------------------------------------------------------------- controls */
+.group{margin-bottom:14px}
+.group>h2{
+  font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  margin:0 0 6px;font-weight:650;
+}
+.plot{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px;
+  padding:3px 6px;border-radius:5px;cursor:pointer;
+}
+.plot:hover{background:var(--bg)}
+.plot[aria-current="true"]{background:var(--accent);color:#fff}
+.plot[aria-current="true"] .bar i{background:#fff;opacity:.85}
+.plot .name{font-variant-numeric:tabular-nums}
+.plot .bar{width:46px;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.plot .bar i{display:block;height:100%;background:var(--accent)}
+.site{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  margin:10px 0 4px;font-weight:650}
+.site:first-child{margin-top:0}
+
+label.row{display:flex;align-items:center;gap:7px;padding:3px 0;cursor:pointer}
+label.row input{margin:0}
+.pill{display:inline-block;width:9px;height:9px;border-radius:2px;flex:none}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{flex:1;background:var(--panel);border:0;padding:4px 0;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+select{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+input[type=range]{width:100%}
+
+/* ---------------------------------------------------------------- right panel */
+.kv{display:grid;grid-template-columns:1fr auto;gap:1px 8px;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;text-align:right}
+table.met{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.met th,table.met td{padding:3px 4px;text-align:right;border-bottom:1px solid var(--line)}
+table.met th:first-child,table.met td:first-child{text-align:left}
+table.met thead th{color:var(--muted);font-weight:600;font-size:11px}
+.legend{display:flex;flex-direction:column;gap:4px;font-size:12px}
+.legend div{display:flex;align-items:center;gap:7px}
+.note{color:var(--muted);font-size:11px;line-height:1.4}
+.empty{color:var(--muted);padding:20px;text-align:center}
+
+/* ---------------------------------------------------------------- floating */
+#tip{
+  position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);
+  border-radius:7px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.14);
+  max-width:230px;display:none;z-index:20;font-variant-numeric:tabular-nums;
+}
+#scale{
+  position:absolute;left:12px;bottom:12px;background:var(--panel);border:1px solid var(--line);
+  border-radius:6px;padding:3px 8px;font-size:11px;color:var(--muted);z-index:10;
+}
+#help{
+  position:absolute;right:12px;bottom:12px;color:var(--muted);font-size:11px;
+  background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px 8px;z-index:10;
+}
+#loading{
+  position:absolute;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;
+  color:var(--muted);
+}
+
+/* ---------------------------------------------------------------- results */
+#view-res{padding:18px 22px;overflow-y:auto;height:100%;background:var(--bg)}
+#view-res h2{font-size:15px;margin:0 0 3px}
+#view-res h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+  margin:22px 0 8px;font-weight:650}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card h4{margin:0 0 8px;font-size:12px;color:var(--muted);font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+table.big{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;background:var(--panel)}
+table.big th,table.big td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right}
+table.big th:first-child,table.big td:first-child{text-align:left}
+table.big thead th{color:var(--muted);font-size:11px;font-weight:600}
+table.big tr.sep td{background:var(--bg);font-weight:650;text-align:left;color:var(--muted);
+  font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.best{font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>TreeLearn viewer <span id="sub"></span></h1>
+    <nav class="tabs" id="tabs">
+      <button data-v="map" aria-selected="true">Map</button>
+      <button data-v="cloud" aria-selected="false">3D cloud</button>
+      <button data-v="tree" aria-selected="false">3D tree</button>
+      <button data-v="res"  aria-selected="false">Results</button>
+    </nav>
+    <div class="grow"></div>
+    <button class="iconbtn" id="btn-fit" title="Fit the plot in the view">Fit</button>
+    <button class="iconbtn" id="btn-theme" title="Light or dark">Theme</button>
+  </header>
+
+  <div id="body">
+    <aside id="left"></aside>
+    <main id="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div id="tip"></div>
+      <div id="scale"></div>
+      <div id="help">drag to move, wheel to zoom</div>
+      <div id="loading">loading data...</div>
+    </main>
+    <aside class="right" id="right"></aside>
+  </div>
+</div>
+
+<script src="data/geo.js"></script>
+<script src="data/trees.js"></script>
+<script src="data/clouds.js"></script>
+<script src="data/crowns.js"></script>
+<script src="data/instances.js"></script>
+<script>
+"use strict";
+// ===========================================================================
+// Viewer of the raw data and results of the TreeLearn project.
+// Three sources: GEO (canopy and region), TREES (trees, detections, pairs) and
+// CLOUDS (subsampled point clouds with the predicted instance).
+// ===========================================================================
+
+const GEO = window.GEO || {}, TREES = window.TREES || {}, CLOUDS = window.CLOUDS || {},
+      CROWNS = window.CROWNS || {}, INSTANCES = window.INSTANCES || {};
+const METHODS = [
+  {k:"SAT",   name:"SegmentAnyTree", short:"SAT",   var:"--sat", note:"untrained"},
+  {k:"AMS3D", name:"AMS3D",          short:"AMS3D", var:"--ams", note:"tuned per plot"},
+  {k:"FF3D",  name:"ForestFormer3D",short:"FF3D", var:"--ff3d",note:"untrained"},
+  {k:"TreeLite3D", name:"TreeLite3D", short:"TL3D", var:"--tl3d",
+   note:"clustering retuned"},
+  {k:"WS",    name:"Watershed CHM",  short:"WS",    var:"--ws",  note:"tuned per plot"},
+];
+const STRATA = ["dominant","intermediate","suppressed"];
+const SITES = [
+  {k:"cham", name:"Chamrousse", plots:["1","1b","2","3","3b","4","Premol"]},
+  {k:"pell", name:"Pellizzano", plots:Array.from({length:15},(_,i)=>"p"+(i+1))},
+];
+
+const S = {
+  view:"map",
+  key:"cham/1",
+  method:"SAT",
+  dmatch:"3.5",
+  others:false,          // draw the other methods too, small
+  layers:{chm:true, points:true, detCrowns:true, region:true, crowns:true, lines:true,
+         det:true, outside:true},
+  stratum:"all",
+  pairOrder:"iou",
+  crop:"region",   // inventoried region or whole tile
+  hide:false,      // h key: clean canopy, no symbols
+  sel:null,             // {kind:"tree"|"det", i:int}
+  highlight:true,        // the points of what is selected stand out, the rest dims
+  vw:{cx:0, cy:0, sc:4, auto:true},
+  cloud:{rot:0.6, incl:0.30, zoom:1, color:"inst", pan:{x:0,y:0}, focus:null},
+};
+
+// ------------------------------------------------------------------ utilities
+const $ = s => document.querySelector(s);
+const el = (t,p={},...h)=>{const n=document.createElement(t);
+  for(const [k,v] of Object.entries(p)){
+    if(k==="cls") n.className=v; else if(k==="txt") n.textContent=v;
+    else if(k.startsWith("on")) n.addEventListener(k.slice(2),v);
+    else if(v!==null&&v!==false) n.setAttribute(k,v===true?"":v);
+  }
+  for(const c of h.flat()) if(c!=null) n.append(c.nodeType?c:document.createTextNode(c));
+  return n;};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const n2 = v => (v==null||!isFinite(v)) ? "--" : v.toFixed(2);
+const n3 = v => (v==null||!isFinite(v)) ? "--" : v.toFixed(3);
+const pct = v => (v==null||!isFinite(v)) ? "--" : (100*v).toFixed(1)+"%";
+
+// Decodes the cloud once per plot and leaves it in world coordinates, sorted from
+// lowest to highest so that when it is painted from above the crowns end up on top
+// of the ground.
+const cacheCloud = new Map();
+function cloud(key){
+  if(cacheCloud.has(key)) return cacheCloud.get(key);
+  const cloudData = CLOUDS[key];
+  if(!cloudData){ cacheCloud.set(key,null); return null; }
+  const sc = cloudData.scale||100, xi = d16(cloudData.x), yi = d16(cloudData.y), zi = d16(cloudData.z), ii = d16(cloudData.inst);
+  const n = xi.length, ord = Array.from({length:n},(_,i)=>i).sort((a,b)=>zi[a]-zi[b]);
+  const X = new Float64Array(n), Y = new Float64Array(n), Z = new Float32Array(n),
+        I = new Int16Array(n);
+  let zmin = Infinity, zmax = -Infinity;
+  for(let k=0;k<n;k++){
+    const i = ord[k];
+    X[k] = cloudData.origin[0] + xi[i]/sc;
+    Y[k] = cloudData.origin[1] + yi[i]/sc;
+    Z[k] = zi[i]/sc;
+    I[k] = ii[i];
+    if(Z[k]<zmin) zmin=Z[k]; if(Z[k]>zmax) zmax=Z[k];
+  }
+  const r = {n, X, Y, Z, I, zmin, zmax, meta:cloudData};
+  cacheCloud.set(key, r);
+  return r;
+}
+
+function d16(b64){                     // base64 -> Int16Array little endian
+  const bin = atob(b64), buf = new ArrayBuffer(bin.length), u8 = new Uint8Array(buf);
+  for(let i=0;i<bin.length;i++) u8[i] = bin.charCodeAt(i);
+  return new Int16Array(buf);
+}
+
+// Halo under the symbols: without it, over the point cloud the crown circles and
+// the detection marks get lost.
+function halo(){
+  return document.documentElement.dataset.theme==="dark"
+    ? "rgba(10,11,13,0.75)" : "rgba(255,255,255,0.85)";
+}
+const cHaloG = halo;
+
+function colorHeight(z, zmin, zmax){
+  const t = Math.max(0, Math.min(1, (z-zmin)/Math.max(0.001, zmax-zmin)));
+  return `hsl(${(140-95*t).toFixed(0)} ${(35+40*t).toFixed(0)}% ${(24+46*t).toFixed(0)}%)`;
+}
+
+// Cyclic palette for instances, stable across repaints.
+function colorInst(i){
+  if(i<=0) return "hsl(0 0% 55% / .35)";
+  const h = (i*137.508)%360;
+  return `hsl(${h.toFixed(0)} 62% ${document.documentElement.dataset.theme==="dark"?62:44}%)`;
+}
+
+// ------------------------------------------------------------------ derived
+// Greedy one to one matching, the same rule as the analysis: the closest admissible
+// pair is taken, its row and its column are deleted, and it repeats. It is redone
+// here to be able to count the detections outside the region too when the user takes
+// the cropping off, without having to re-export anything.
+function matchJS(dx, dy, rx, ry, dmax){
+  const nd = dx.length, nr = rx.length, pairs = [];
+  if(!nd || !nr) return pairs;
+  const usedD = new Uint8Array(nd), usedR = new Uint8Array(nr);
+  const cand = [];
+  for(let i=0;i<nd;i++) for(let j=0;j<nr;j++){
+    const d = Math.hypot(dx[i]-rx[j], dy[i]-ry[j]);
+    if(d <= dmax) cand.push([d,i,j]);
+  }
+  cand.sort((a,b)=>a[0]-b[0]);
+  for(const [,i,j] of cand){
+    if(usedD[i] || usedR[j]) continue;
+    usedD[i]=1; usedR[j]=1; pairs.push([i,j]);
+  }
+  return pairs;
+}
+
+const derivedCache = new Map();
+function derive(){
+  const id = S.key+"|"+S.method+"|"+S.dmatch+"|"+S.crop;
+  if(derivedCache.has(id)) return derivedCache.get(id);
+  const a = TREES[S.key];
+  const empty = {pairs:[], treeOK:new Set(), detOK:new Set(),
+                 det:{x:[],y:[],h:[],area:[]}, nOutside:0};
+  if(!a){ derivedCache.set(id,empty); return empty; }
+  const inside = (a.det||{})[S.method] || {x:[],y:[],h:[],area:[]};
+  const outside  = (a.det_outside||{})[S.method] || {x:[],y:[],h:[],area:[]};
+  let det, pairs;
+  if(S.crop === "region"){
+    det = inside;
+    pairs = (((a.pairs||{})[S.method])||{})[S.dmatch] || [];
+  } else {
+    // Uncropped: everything the method produced enters the count.
+    det = {x:inside.x.concat(outside.x), y:inside.y.concat(outside.y),
+           h:inside.h.concat(outside.h), area:inside.area.concat(outside.area)};
+    pairs = matchJS(det.x, det.y, a.inv.x, a.inv.y, parseFloat(S.dmatch));
+  }
+  let nLarge = 0;
+  for(const ar of det.area) if(ar > AREA_MAX_CROWN) nLarge++;
+  const r = {pairs, treeOK:new Set(pairs.map(p=>p[1])), detOK:new Set(pairs.map(p=>p[0])),
+             det, nInside:inside.x.length, nOutside:outside.x.length, nLarge};
+  derivedCache.set(id, r);
+  return r;
+}
+
+// Queue of cases: the errors of the active plot and method, to walk through them.
+// First the missed trees, from tallest to shortest, and then the false positives.
+// It is the order in which an error explains itself best.
+function cases(){
+  const a = TREES[S.key], d = derive();
+  if(!a) return [];
+  const out = [];
+  for(let i=0;i<a.inv.x.length;i++){
+    if(d.treeOK.has(i) || !treeVisible(a,i)) continue;
+    out.push({kind:"tree", i, order:-a.inv.h[i],
+              txt:`${n2(a.inv.h[i])} m · ${a.inv.stratum[i].slice(0,3)}`});
+  }
+  out.sort((x,y)=>x.order-y.order);
+  const fp = [];
+  for(let i=0;i<d.det.x.length;i++){
+    if(d.detOK.has(i)) continue;
+    fp.push({kind:"det", i, order:-d.det.h[i], txt:`${n2(d.det.h[i])} m`});
+  }
+  fp.sort((x,y)=>x.order-y.order);
+  return out.concat(fp);
+}
+
+function treeVisible(a,i){
+  return S.stratum==="all" || a.inv.stratum[i]===S.stratum;
+}
+
+// ------------------------------------------------------------------ instances
+// Instance identifier of a SegmentAnyTree detection. Only that method assigns points
+// to trees, so only it has this.
+function instanceOfDetection(i, right){
+  const m = INSTANCES[S.key];
+  if(!m || S.method !== "SAT") return null;
+  const nD = right.nInside==null ? right.det.x.length : right.nInside;
+  const id = i < nD ? m.inside[i] : m.outside[i - nD];
+  return id==null ? null : id;
+}
+
+// Points that fall in the crown cylinder of a field tree. It is the SAME rule that
+// defines the strata in evaluation_core.py: radius equivalent to the measured area, from
+// 40 % of the height up to the height plus 2 m, and above 1.5 m off the ground.
+// Careful: this is NOT an annotated segmentation. It is a hull built out of what was
+// measured in the field, which is all there is.
+const cacheCyl = new Map();
+function treeCylinder(key, i){
+  const id = key+"|"+i;
+  if(cacheCyl.has(id)) return cacheCyl.get(id);
+  const nu = cloud(key), a = TREES[key];
+  if(!nu || !a){ cacheCyl.set(id,null); return null; }
+  const rad = Math.sqrt(Math.max(a.inv.area[i], 0.1)/Math.PI);
+  const base = 0.4*a.inv.h[i], ceiling = a.inv.h[i] + 2, r2 = rad*rad;
+  const cx = a.inv.x[i], cy = a.inv.y[i];
+  const m = new Uint8Array(nu.n);
+  let n = 0;
+  for(let k=0;k<nu.n;k++){
+    const z = nu.Z[k];
+    if(z < 1.5 || z < base || z > ceiling) continue;
+    const dx = nu.X[k]-cx, dy = nu.Y[k]-cy;
+    if(dx*dx + dy*dy <= r2){ m[k] = 1; n++; }
+  }
+  const r = {m, n, rad, base, ceiling};
+  cacheCyl.set(id, r);
+  return r;
+}
+
+// Highlight mask for the cloud: 1 on the points of what is selected.
+let cacheMask = {id:null, val:null};
+function highlightMask(){
+  if(!S.sel || !S.highlight) return null;
+  const right = derive();
+  const id = [S.key, S.method, S.dmatch, S.crop, S.sel.kind, S.sel.i].join("|");
+  if(cacheMask.id === id) return cacheMask.val;
+  const nu = cloud(S.key);
+  let val = null;
+  if(nu){
+    if(S.sel.kind === "tree"){
+      const c = treeCylinder(S.key, S.sel.i);
+      val = c ? c.m : null;
+    } else {
+      const iid = instanceOfDetection(S.sel.i, right);
+      if(iid != null){
+        val = new Uint8Array(nu.n);
+        for(let k=0;k<nu.n;k++) if(nu.I[k] === iid) val[k] = 1;
+      }
+    }
+  }
+  cacheMask = {id, val};
+  return val;
+}
+
+// ------------------------------------------------------------------ crowns
+// The crown of a detection. SegmentAnyTree hands out instances per point, so its
+// crown is the real convex hull of its returns. AMS3D and the watershed only publish
+// an area, so they have to be approximated with the equivalent circle. It is the same
+// asymmetry declared in the study, and here you see it.
+function worldCircle(x, y, area, n){
+  const r = Math.sqrt(Math.max(area, 0.01)/Math.PI), out = [];
+  for(let k=0;k<(n||28);k++){
+    const t = 2*Math.PI*k/(n||28);
+    out.push([x + r*Math.cos(t), y + r*Math.sin(t)]);
+  }
+  return out;
+}
+
+function detectionCrown(i, right){
+  if(right.det.area[i] > AREA_MAX_CROWN) return null;
+  const c = CROWNS[S.key];
+  if(S.method === "SAT" && c){
+    const nD = right.nInside==null ? right.det.x.length : right.nInside;
+    const list = i < nD ? c.sat_inside : c.sat_outside;
+    const j = i < nD ? i : i - nD;
+    const v = list && list[j];
+    if(v && v.length >= 3)
+      return v.map(([dx,dy]) => [right.det.x[i] + dx/10, right.det.y[i] + dy/10]);
+  }
+  return worldCircle(right.det.x[i], right.det.y[i], right.det.area[i]);
+}
+
+// Six Chamrousse trees carry area 0 in the inventory, so their four radius polygon
+// comes out collapsed into a point. Having 24 vertices is not enough to call it good:
+// you have to check that it really has extent.
+function usefulPolygon(v){
+  if(!v || v.length < 3) return false;
+  let m = 0;
+  for(const [dx,dy] of v) m = Math.max(m, Math.abs(dx), Math.abs(dy));
+  return m > 0;
+}
+
+function inventoryCrown(a, i){
+  const c = CROWNS[S.key];
+  const v = c && c.inv && c.inv[i];
+  if(usefulPolygon(v))
+    return v.map(([dx,dy]) => [a.inv.x[i] + dx/10, a.inv.y[i] + dy/10]);
+  return null;                    // without the four radii the usual circle is drawn
+}
+
+// A few SegmentAnyTree instances outside the region stretch tens of meters. They are
+// real, but drawn as a crown they would cover the whole plot, so they are left out of
+// the outline and their number is stated.
+const AREA_MAX_CROWN = 150;
+
+function trace(poly){
+  ctx.beginPath();
+  poly.forEach(([x,y],k)=> k?ctx.lineTo(sx(x),sy(y)):ctx.moveTo(sx(x),sy(y)));
+  ctx.closePath();
+}
+
+// ------------------------------------------------------------------ images
+// The CHM arrives in greyscale. Painting it as it comes covers the symbols, so it goes
+// through a narrow, barely saturated ramp: the canopy relief still reads but it leaves
+// room for the crown circles and the detection marks.
+const RAMP = {
+  light:  [[198,201,192],[252,251,247]],
+  dark: [[32,37,40],[104,113,107]],
+};
+const imgs = new Map();     // key -> raw Image
+const tinted = new Map();  // key|theme -> canvas already colored
+
+function chmImg(key){
+  if(imgs.has(key)) return imgs.get(key);
+  const g = GEO[key];
+  if(!g || !g.chm_png){ imgs.set(key,null); return null; }
+  const im = new Image();
+  im.onload = ()=>{ tinted.delete(key+"|light"); tinted.delete(key+"|dark"); paint(); };
+  im.src = g.chm_png;
+  imgs.set(key, im);
+  return im;
+}
+
+function chmTinted(key){
+  const theme = document.documentElement.dataset.theme==="dark" ? "dark" : "light";
+  const id = key+"|"+theme;
+  if(tinted.has(id)) return tinted.get(id);
+  const im = chmImg(key);
+  if(!im || !im.complete || !im.naturalWidth) return null;
+  const c = document.createElement("canvas");
+  c.width = im.naturalWidth; c.height = im.naturalHeight;
+  const k = c.getContext("2d", {willReadFrequently:true});
+  k.drawImage(im,0,0);
+  const d = k.getImageData(0,0,c.width,c.height), px = d.data;
+  const [lo,hi] = RAMP[theme];
+  for(let i=0;i<px.length;i+=4){
+    const t = px[i]/255;
+    px[i]   = lo[0] + (hi[0]-lo[0])*t;
+    px[i+1] = lo[1] + (hi[1]-lo[1])*t;
+    px[i+2] = lo[2] + (hi[2]-lo[2])*t;
+  }
+  k.putImageData(d,0,0);
+  tinted.set(id,c);
+  return c;
+}
+
+// ------------------------------------------------------------------ canvas
+const cv = $("#canvas"), ctx = cv.getContext("2d");
+let W=0, H=0, DPR=1;
+function measure(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  const r = cv.parentElement.getBoundingClientRect();
+  W = Math.max(1,Math.round(r.width)); H = Math.max(1,Math.round(r.height));
+  cv.width = W*DPR; cv.height = H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(S.vw.auto) fitView();
+}
+const sx = wx => (wx - S.vw.cx)*S.vw.sc + W/2;
+const sy = wy => H/2 - (wy - S.vw.cy)*S.vw.sc;
+const wx_ = px => (px - W/2)/S.vw.sc + S.vw.cx;
+const wy_ = py => (H/2 - py)/S.vw.sc + S.vw.cy;
+
+function fitView(){
+  const g = GEO[S.key], a = TREES[S.key];
+  let x0,y0,x1,y1;
+  if(g && g.chm_extent){ [x0,y0,x1,y1] = g.chm_extent; }
+  else if(a){ x0=Math.min(...a.inv.x); x1=Math.max(...a.inv.x);
+              y0=Math.min(...a.inv.y); y1=Math.max(...a.inv.y); }
+  else return;
+  S.vw.cx = (x0+x1)/2; S.vw.cy = (y0+y1)/2;
+  S.vw.sc = Math.max(0.4, 0.92*Math.min(W/Math.max(1,x1-x0), H/Math.max(1,y1-y0)));
+}
+
+// ------------------------------------------------------------------ 2D map
+function paintMap(){
+  const g = GEO[S.key], a = TREES[S.key], d = derive();
+  ctx.clearRect(0,0,W,H);
+
+  // 1. canopy
+  if(S.layers.chm && g && g.chm_extent){
+    const im = chmTinted(S.key);
+    if(im){
+      const [x0,y0,x1,y1] = g.chm_extent;
+      ctx.save(); ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(im, sx(x0), sy(y1), (x1-x0)*S.vw.sc, (y1-y0)*S.vw.sc);
+      ctx.restore();
+    }
+  }
+  // 1b. the cloud seen from above, colored by the instance the model predicted, to
+  //     see the crown really segmented and not just a circle
+  if(S.layers.points){
+    const nu = cloud(S.key);
+    if(nu){
+      const r = Math.max(1, Math.min(5, S.vw.sc*0.34));
+      const byInst = S.cloud.color==="inst";
+      const mask = highlightMask();
+      const step = Math.max(1, Math.ceil(nu.n/18000));   // the map does not need them all
+      ctx.save();
+      // Two passes: first the dimmed background, then the highlight, so it stands out.
+      for(const phase of (mask ? [0,1] : [1])){
+        let last = -99999;
+        ctx.globalAlpha = mask ? (phase ? 1 : 0.22) : (S.layers.chm ? 0.82 : 1);
+        const rr = mask && phase ? r+1.4 : r;
+        for(let i=0;i<nu.n;i+=(mask && phase ? 1 : step)){
+          if(mask && (mask[i]?0:1) === phase) continue;
+          const px = sx(nu.X[i]), py = sy(nu.Y[i]);
+          if(px<-4||px>W+4||py<-4||py>H+4) continue;
+          if(byInst){
+            if(nu.I[i]!==last){ ctx.fillStyle = colorInst(nu.I[i]); last = nu.I[i]; }
+          } else {
+            ctx.fillStyle = colorHeight(nu.Z[i], nu.zmin, nu.zmax);
+          }
+          ctx.fillRect(px-rr/2, py-rr/2, rr, rr);
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  // 1c. crowns of the active method's detections, seen from above
+  if(S.layers.detCrowns && a){
+    const right = derive(), col = cssv(METHODS.find(m=>m.k===S.method).var);
+    // No fill: with dozens of overlapping crowns the fills add up and the map turns
+    // into a blob. Dashed outline to separate them from the field crowns, which go
+    // solid.
+    ctx.save();
+    for(let i=0;i<right.det.x.length;i++){
+      const pol = detectionCrown(i, right);
+      if(!pol) continue;
+      trace(pol);
+      if(S.layers.points){
+        ctx.setLineDash([]); ctx.strokeStyle = cHaloG(); ctx.lineWidth = 2.6; ctx.stroke();
+      }
+      ctx.setLineDash([4,3]);
+      ctx.strokeStyle = col; ctx.lineWidth = 1.3;
+      ctx.globalAlpha = right.detOK.has(i) ? 1 : .45;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
+  // 2. inventoried region
+  if(S.layers.region && g && g.region && g.region.length>2){
+    ctx.save();
+    ctx.beginPath();
+    g.region.forEach(([x,y],i)=> i?ctx.lineTo(sx(x),sy(y)):ctx.moveTo(sx(x),sy(y)));
+    ctx.closePath();
+    ctx.fillStyle = cssv("--accent")+"14";
+    ctx.fill();
+    ctx.setLineDash([6,4]); ctx.lineWidth = 1.4;
+    ctx.strokeStyle = cssv("--accent"); ctx.globalAlpha=.75; ctx.stroke();
+    ctx.restore();
+  }
+  if(!a || S.hide){ drawScale(); return; }
+
+  // 3. inventory crowns, colored by whether the active method found them
+  if(S.layers.crowns){
+    const cOK = cssv("--ok"), cNo = cssv("--fail"), cHalo = halo();
+    for(let i=0;i<a.inv.x.length;i++){
+      if(!treeVisible(a,i)) continue;
+      const hit = d.treeOK.has(i);
+      const X = sx(a.inv.x[i]), Y = sy(a.inv.y[i]), R = Math.max(2, a.inv.r[i]*S.vw.sc);
+      const lw = a.inv.stratum[i]==="dominant" ? 1.7
+               : a.inv.stratum[i]==="intermediate" ? 1.1 : .7;
+      const pol = inventoryCrown(a, i);
+      const noCrown = !(a.inv.r[i] > 0) && !pol;
+      if(pol) trace(pol);
+      else if(noCrown){       // measured radius null: fixed size mark, not a crown
+        ctx.setLineDash([2,2]); ctx.beginPath(); ctx.arc(X,Y,6,0,6.2832);
+      } else { ctx.beginPath(); ctx.arc(X,Y,R,0,6.2832); }
+      if(!S.layers.points){ ctx.fillStyle = (hit?cOK:cNo)+"1f"; ctx.fill(); }
+      if(S.layers.points){ ctx.lineWidth = lw+2.2; ctx.strokeStyle = cHalo; ctx.stroke(); }
+      ctx.lineWidth = lw;
+      ctx.strokeStyle = hit?cOK:cNo; ctx.globalAlpha = hit?.9:1; ctx.stroke();
+      ctx.globalAlpha = 1; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(X,Y,2.1,0,6.2832);
+      ctx.fillStyle = cHalo; ctx.fill();
+      ctx.beginPath(); ctx.arc(X,Y,1.4,0,6.2832);
+      ctx.fillStyle = hit?cOK:cNo; ctx.fill();
+    }
+  }
+  // 4. matching lines
+  if(S.layers.lines && d.pairs.length){
+    ctx.save();
+    ctx.beginPath();
+    for(const [di,ri] of d.pairs){
+      if(!treeVisible(a,ri)) continue;
+      ctx.moveTo(sx(d.det.x[di]), sy(d.det.y[di]));
+      ctx.lineTo(sx(a.inv.x[ri]),  sy(a.inv.y[ri]));
+    }
+    if(S.layers.points){ ctx.strokeStyle = halo(); ctx.lineWidth = 2.6; ctx.stroke(); }
+    ctx.strokeStyle = cssv("--text"); ctx.globalAlpha = S.layers.points?.75:.32;
+    ctx.lineWidth = .9; ctx.stroke(); ctx.restore();
+  }
+  // 5. other methods, small background marks
+  if(S.others){
+    for(const m of METHODS){
+      if(m.k===S.method) continue;
+      const dd = (a.det||{})[m.k]; if(!dd) continue;
+      ctx.save(); ctx.globalAlpha=.5; ctx.fillStyle = cssv(m.var);
+      for(let i=0;i<dd.x.length;i++){
+        ctx.beginPath(); ctx.arc(sx(dd.x[i]), sy(dd.y[i]), 1.7, 0, 6.2832); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+  // 6b. detections falling outside the region: they count neither for nor against, and
+  //     they are the visible evidence that the inventory covers only a third of the tile
+  if(S.layers.outside && a.det_outside && a.det_outside[S.method]){
+    const df = a.det_outside[S.method];
+    ctx.save();
+    for(let i=0;i<df.x.length;i++){
+      const X=sx(df.x[i]), Y=sy(df.y[i]);
+      ctx.beginPath(); ctx.arc(X,Y,2.6,0,6.2832);
+      if(S.layers.points){ ctx.strokeStyle=halo(); ctx.lineWidth=2.6; ctx.stroke(); }
+      ctx.strokeStyle=cssv("--muted"); ctx.lineWidth=1;
+      ctx.globalAlpha = S.layers.points?.9:.55; ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // 6. detections of the active method
+  if(S.layers.det){
+    const col = cssv(METHODS.find(m=>m.k===S.method).var), cFP = cssv("--fp"), cHalo = halo();
+    for(let i=0;i<d.det.x.length;i++){
+      const ok = d.detOK.has(i);
+      const X = sx(d.det.x[i]), Y = sy(d.det.y[i]), s = ok?3.4:4.2;
+      ctx.beginPath();
+      if(ok){
+        ctx.moveTo(X,Y-s); ctx.lineTo(X+s,Y); ctx.lineTo(X,Y+s); ctx.lineTo(X-s,Y); ctx.closePath();
+        ctx.fillStyle = col; ctx.fill();
+        ctx.strokeStyle = cHalo; ctx.lineWidth = 1.2; ctx.stroke();
+      } else {
+        ctx.moveTo(X-s,Y-s); ctx.lineTo(X+s,Y+s); ctx.moveTo(X+s,Y-s); ctx.lineTo(X-s,Y+s);
+        ctx.strokeStyle = cHalo; ctx.lineWidth = 3.4; ctx.stroke();
+        ctx.strokeStyle = cFP; ctx.lineWidth = 1.8; ctx.stroke();
+      }
+    }
+  }
+  // 7. selection
+  if(S.sel){
+    let X,Y,R=11;
+    if(S.sel.kind==="tree" && S.sel.i<a.inv.x.length){
+      X=sx(a.inv.x[S.sel.i]); Y=sy(a.inv.y[S.sel.i]);
+      R=Math.max(11, a.inv.r[S.sel.i]*S.vw.sc+5);
+    } else if(S.sel.kind==="det" && S.sel.i<d.det.x.length){
+      X=sx(d.det.x[S.sel.i]); Y=sy(d.det.y[S.sel.i]);
+    } else { X=null; }
+    if(X!=null){
+      ctx.save(); ctx.strokeStyle=cssv("--sel"); ctx.lineWidth=2; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.arc(X,Y,R,0,6.2832); ctx.stroke(); ctx.restore();
+    }
+  }
+  drawScale();
+}
+
+function drawScale(){
+  const target = 90;                       // approximate pixels
+  const steps = [1,2,5,10,20,25,50,100,200];
+  let m = steps.find(p=>p*S.vw.sc>=target) || 200;
+  $("#scale").textContent = `${m} m`;
+  $("#scale").style.width = (m*S.vw.sc)+"px";
+}
+
+// ------------------------------------------------------------------ 3D tree
+// Compares, point by point, the instance the model predicted with the crown cylinder
+// deduced from what was measured in the field. The cylinder is NOT an annotation: it is
+// the only reference there is, and it only serves to inspect, not to measure delineation.
+const pairCache = new Map();
+
+function treeComparison(){
+  const right = derive();
+  if(!TREES[S.key] || !S.sel) return null;
+  let ia = null, idet = null;
+  if(S.sel.kind === "tree"){
+    ia = S.sel.i;
+    const pair = right.pairs.find(p => p[1] === ia);
+    idet = pair ? pair[0] : null;
+  } else {
+    idet = S.sel.i;
+    const pair = right.pairs.find(p => p[0] === idet);
+    ia = pair ? pair[1] : null;
+  }
+  if(ia == null) return {noPair:true, ia, idet};
+  return comparePair(ia, idet);
+}
+
+function comparePair(ia, idet){
+  const a = TREES[S.key], right = derive();
+  const id = [S.key, S.method, S.dmatch, S.crop, ia, idet].join("|");
+  if(pairCache.has(id)) return pairCache.get(id);
+
+  const nu = cloud(S.key), cyl = treeCylinder(S.key, ia);
+  if(!nu || !cyl) return null;
+  const iid = idet==null ? null : instanceOfDetection(idet, right);
+  const rad = cyl.rad, cx = a.inv.x[ia], cy = a.inv.y[ia];
+  const reach = Math.max(rad + 4, 8), a2 = reach*reach;
+
+  // class: 0 context, 1 reference only, 2 prediction only, 3 in both
+  const idx = [], cls = [];
+  let nRef = 0, nPred = 0, nBoth = 0;
+  for(let k=0;k<nu.n;k++){
+    const dx = nu.X[k]-cx, dy = nu.Y[k]-cy;
+    if(dx*dx + dy*dy > a2) continue;
+    const inRef = cyl.m[k] === 1;
+    const inPred = iid != null && nu.I[k] === iid;
+    if(inRef) nRef++;
+    if(inPred) nPred++;
+    if(inRef && inPred) nBoth++;
+    idx.push(k);
+    cls.push(inRef && inPred ? 3 : inPred ? 2 : inRef ? 1 : 0);
+  }
+  // Extent of what is really compared, to frame the camera without clipping.
+  let maxR = 1, zMin = Infinity, zMax = -Infinity;
+  for(let j=0;j<idx.length;j++){
+    if(!cls[j]) continue;
+    const k2 = idx[j], dx = nu.X[k2]-cx, dy = nu.Y[k2]-cy;
+    maxR = Math.max(maxR, Math.hypot(dx,dy));
+    if(nu.Z[k2] < zMin) zMin = nu.Z[k2];
+    if(nu.Z[k2] > zMax) zMax = nu.Z[k2];
+  }
+  if(!isFinite(zMin)){ zMin = 0; zMax = a.inv.h[ia]; }
+  const union = nRef + nPred - nBoth;
+  const r = {ia, idet, iid, idx, cls, nRef, nPred, nBoth,
+             iou: union ? nBoth/union : 0,
+             recallPts: nRef ? nBoth/nRef : 0,
+             precPts: nPred ? nBoth/nPred : 0,
+             cx, cy, rad, hRef: a.inv.h[ia], maxR, zMin, zMax};
+  pairCache.set(id, r);
+  return r;
+}
+
+// All the matched pairs of the plot, with their IoU. It is computed once per plot and
+// method; on the largest plot it is a few tenths of a second.
+const cacheList = new Map();
+function pairList(){
+  const id = [S.key, S.method, S.dmatch, S.crop].join("|");
+  if(cacheList.has(id)) return cacheList.get(id);
+  const a = TREES[S.key], right = derive();
+  const out = [];
+  if(a && S.method === "SAT"){
+    for(const [idet, ia] of right.pairs){
+      const c = comparePair(ia, idet);
+      out.push({ia, idet, iou: c ? c.iou : 0, nRef: c ? c.nRef : 0,
+                h: a.inv.h[ia], dh: right.det.h[idet] - a.inv.h[ia],
+                stratum: a.inv.stratum[ia],
+                species: (a.inv.species || [])[ia] || "?"});
+    }
+  }
+  cacheList.set(id, out);
+  return out;
+}
+
+// Below this number of points in the cylinder the IoU means nothing: the reference is
+// too poor, almost always because the tree is suppressed or because the inventory gave
+// it area zero.
+const MIN_REF = 30;
+
+const CLS_COL = {0:"--line", 1:"--fail", 2:"--fp", 3:"--ok"};
+const CLS_NAME = {1:"only in the field reference", 2:"only in the predicted instance",
+                 3:"in both", 0:"context, neither one"};
+
+function paintTree(){
+  ctx.clearRect(0,0,W,H);
+  const cen = (t,y)=>{ ctx.fillStyle=cssv("--muted"); ctx.font="13px sans-serif";
+                       ctx.textAlign="center"; ctx.fillText(t, W/2, y||H/2); };
+  if(S.method !== "SAT"){
+    cen("Only SegmentAnyTree assigns points to trees.", H/2-10);
+    cen(`${S.method} publishes a position and an area, so there is nothing to compare point by point.`, H/2+12);
+    return;
+  }
+  const c = treeComparison();
+  if(!c){ cen("Pick a matched tree on the map, or press n to walk through them."); return; }
+  if(c.noPair){ cen("That element has no pair at this matching distance."); return; }
+  const nu = cloud(S.key);
+
+  const ca=Math.cos(S.cloud.rot), sa=Math.sin(S.cloud.rot);
+  const ci=Math.cos(S.cloud.incl), si=Math.sin(S.cloud.incl);
+  const mz = (c.zMin + c.zMax)/2;
+  const widthM = 2*c.maxR*1.15, heightM = Math.max(2, c.zMax - c.zMin)*1.15;
+  const k = Math.min(W/widthM, H/heightM) * 0.92 * S.cloud.zoom;
+
+  const P = c.idx.map((p,j)=>{
+    const x = nu.X[p]-c.cx, y = nu.Y[p]-c.cy, z = nu.Z[p]-mz;
+    const xr = x*ca - y*sa, yr = x*sa + y*ca;
+    return [W/2 + xr*k + S.cloud.pan.x, H/2 - (z*ci - yr*si)*k + S.cloud.pan.y,
+            yr*ci + z*si, c.cls[j]];
+  }).sort((u,v)=>u[2]-v[2]);
+
+  for(const [px,py,,cl] of P){
+    if(px<-5||px>W+5||py<-5||py>H+5) continue;
+    const r = cl===0 ? 1.8 : 3.4;
+    ctx.globalAlpha = cl===0 ? 0.42 : 1;
+    ctx.fillStyle = cssv(CLS_COL[cl]);
+    ctx.fillRect(px-r/2, py-r/2, r, r);
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = cssv("--muted"); ctx.font="11px sans-serif"; ctx.textAlign="left";
+  ctx.fillText(`tree ${c.ia} and detection ${c.idet} (instance ${c.iid}) · `+
+    `${c.nRef} points in the field cylinder, ${c.nPred} in the instance, ${c.nBoth} in both`, 12, 20);
+  ctx.fillText("the reference is a cylinder deduced from measured radii, not an annotated segmentation", 12, 36);
+
+  // Vertical 5 m rule, so the sense of size is not lost while rotating.
+  const ci2 = Math.cos(S.cloud.incl);
+  const px5 = 5*k*ci2;
+  if(px5 > 20 && px5 < H*0.8){
+    const x0 = W-40, y0 = H-40;
+    ctx.strokeStyle = cssv("--muted"); ctx.lineWidth = 1; ctx.globalAlpha = .8;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, y0-px5);
+    ctx.moveTo(x0-4, y0); ctx.lineTo(x0+4, y0);
+    ctx.moveTo(x0-4, y0-px5); ctx.lineTo(x0+4, y0-px5); ctx.stroke();
+    ctx.textAlign = "right"; ctx.fillText("5 m", x0-7, y0-px5/2+4);
+    ctx.globalAlpha = 1; ctx.textAlign = "left";
+  }
+}
+
+// ------------------------------------------------------------------ 3D cloud
+// Fixed cameras. The top down one is the same view from above as the map, but with
+// the points alone and nothing drawn on top.
+const CAMERAS = {
+  nadir:  {rot:0.00, incl:1.5708, name:"top down"},
+  oblique:  {rot:0.60, incl:0.7000, name:"oblique"},
+  lateral:  {rot:0.60, incl:0.1200, name:"side"},
+};
+
+// The projection is cached: rotating is the only thing that forces recomputing it, so
+// the highlight on mouse over does not sort 40000 points again on every frame.
+let projCloud = {id:null};
+function projectCloud(nu){
+  const id = [S.key, S.cloud.rot.toFixed(4), S.cloud.incl.toFixed(4), S.cloud.zoom.toFixed(4),
+              Math.round(S.cloud.pan.x), Math.round(S.cloud.pan.y), W, H].join("|");
+  if(projCloud.id === id) return projCloud;
+  const n = nu.n;
+  let mx=0, my=0, mz=0;
+  for(let i=0;i<n;i++){ mx+=nu.X[i]; my+=nu.Y[i]; mz+=nu.Z[i]; }
+  mx/=n; my/=n; mz/=n;
+  const ca=Math.cos(S.cloud.rot), sa=Math.sin(S.cloud.rot);
+  const ci=Math.cos(S.cloud.incl), si=Math.sin(S.cloud.incl);
+  let ext=1;
+  for(let i=0;i<n;i+=17) ext=Math.max(ext, Math.abs(nu.X[i]-mx), Math.abs(nu.Y[i]-my));
+  const k = 0.42*Math.min(W,H)/ext * S.cloud.zoom;
+  const px = new Float32Array(n), py = new Float32Array(n), pz = new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const x=nu.X[i]-mx, y=nu.Y[i]-my, z=nu.Z[i]-mz;
+    const xr = x*ca - y*sa, yr = x*sa + y*ca;
+    px[i] = W/2 + xr*k + S.cloud.pan.x;
+    py[i] = H/2 - (z*ci - yr*si)*k + S.cloud.pan.y;
+    pz[i] = yr*ci + z*si;
+  }
+  const ord = Array.from({length:n},(_,i)=>i).sort((a,b)=>pz[a]-pz[b]);
+  projCloud = {id, px, py, pz, ord, k};
+  return projCloud;
+}
+
+// Instance under the cursor. Among the nearby points the winner is the one closest to
+// the camera, which is the one seen on top.
+function instUnderCursor(mx, my){
+  const nu = cloud(S.key);
+  if(!nu) return null;
+  const P = projectCloud(nu);
+  let best = -1, bestZ = -Infinity;
+  for(let i=0;i<nu.n;i++){
+    const dx = P.px[i]-mx, dy = P.py[i]-my;
+    if(dx*dx + dy*dy > 49) continue;
+    if(P.pz[i] > bestZ){ bestZ = P.pz[i]; best = i; }
+  }
+  return best >= 0 ? nu.I[best] : null;
+}
+
+// Detection index that corresponds to an instance, so it can be selected by clicking
+// on its points.
+function detOfInstance(iid){
+  const m = INSTANCES[S.key];
+  if(!m || iid == null || iid <= 0) return null;
+  let j = m.inside.indexOf(iid);
+  if(j >= 0) return j;
+  j = m.outside.indexOf(iid);
+  if(j >= 0 && S.crop === "tile") return m.inside.length + j;
+  return null;
+}
+
+// The instance in charge right now: the mouse one if there is any, if not the selected.
+function focusInstance(){
+  if(S.cloud.focus != null) return S.cloud.focus;
+  if(S.sel && S.sel.kind === "det" && S.method === "SAT")
+    return instanceOfDetection(S.sel.i, derive());
+  return null;
+}
+
+function paintCloud(){
+  ctx.clearRect(0,0,W,H);
+  const nu = cloud(S.key);
+  if(!nu){ ctx.fillStyle=cssv("--muted"); ctx.font="13px sans-serif"; ctx.textAlign="center";
+           ctx.fillText("no cloud exported for this plot", W/2, H/2); return; }
+  const {n, Z, I, zmin, zmax, meta} = nu;
+  const P = projectCloud(nu);
+  const r = Math.max(1.6, 2.2*Math.sqrt(S.cloud.zoom));
+  const byInst = S.cloud.color==="inst";
+  const focus = S.highlight ? focusInstance() : null;
+  let last = -99999, nFocus = 0;
+
+  for(const i of P.ord){
+    if(P.px[i]<-5||P.px[i]>W+5||P.py[i]<-5||P.py[i]>H+5) continue;
+    const inside = focus != null && I[i] === focus;
+    if(inside) nFocus++;
+    ctx.globalAlpha = focus == null ? 1 : (inside ? 1 : 0.13);
+    if(inside){
+      ctx.fillStyle = colorInst(I[i]); last = -99999;
+    } else if(byInst){
+      if(I[i]!==last){ ctx.fillStyle = colorInst(I[i]); last = I[i]; }
+    } else {
+      ctx.fillStyle = colorHeight(Z[i], zmin, zmax);
+    }
+    const rr = inside ? r+1.6 : r;
+    ctx.fillRect(P.px[i]-rr/2, P.py[i]-rr/2, rr, rr);
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = cssv("--muted"); ctx.font="11px sans-serif"; ctx.textAlign="left";
+  ctx.fillText(`${n.toLocaleString("en")} of ${meta.n_original.toLocaleString("en")} points. `+
+    `${meta.n_inst} of the ${meta.n_inst_total||meta.n_inst} instances predicted by `+
+    `SegmentAnyTree are visible; the subsampling loses the smallest ones. It does not match `+
+    `the detection count, which also demands 10 points and being inside the region. Color `+
+    `by ${byInst?"instance":"height"}.`, 12, 20);
+  if(focus != null){
+    const d = detOfInstance(focus);
+    ctx.fillStyle = cssv("--text");
+    ctx.fillText(`instance ${focus}: ${nFocus} points in the subsample` +
+      (d != null ? `, detection ${d}` : ", outside the evaluated region") +
+      ". Click to pin it.", 12, 36);
+  }
+}
+
+function paint(){
+  if(S.view==="cloud") paintCloud();
+  else if(S.view==="tree") paintTree();
+  else if(S.view==="map") paintMap();
+}
+
+// ------------------------------------------------------------------ aggregates
+// The bootstrap is recomputed here, resampling plots, so that the intervals respond
+// to the matching distance the user chooses. The seed is fixed, so the result is
+// stable, but it does not agree to the last decimal with the one reported,
+// which uses numpy's generator.
+function rnd(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0;
+  let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function plotMetrics(key, met, d, crop){
+  const a = TREES[key]; if(!a) return null;
+  const m = ((a.met||{})[met]||{})[d];
+  if(!m) return null;
+  if((crop||S.crop) === "region") return m;
+  // Uncropped: the detections from outside start counting, and they have to be
+  // rematched because one of them may fall less than dmax from a tree at the edge.
+  const saved = S.key, savedM = S.method, savedD = S.dmatch, savedR = S.crop;
+  S.key = key; S.method = met; S.dmatch = d; S.crop = "tile";
+  const right = derive();
+  S.key = saved; S.method = savedM; S.dmatch = savedD; S.crop = savedR;
+  const TP = right.pairs.length, ND = right.det.x.length, NR = m.NR;
+  const R = NR?TP/NR:0, P = ND?TP/ND:0;
+  return {TP, ND, NR, recall:+R.toFixed(3), precision:+P.toFixed(3),
+          f1:+((P+R)?2*P*R/(P+R):0).toFixed(3)};
+}
+function aggregate(site, met, d, nboot=2000){
+  const ps = SITES.find(s=>s.k===site).plots.map(p=>plotMetrics(site+"/"+p, met, d)).filter(Boolean);
+  if(!ps.length) return null;
+  const S_=(f)=>ps.reduce((s,m)=>s+m[f],0);
+  const TP=S_("TP"), ND=S_("ND"), NR=S_("NR");
+  const R=NR?TP/NR:0, P=ND?TP/ND:0, F=(P+R)?2*P*R/(P+R):0;
+  const rr=rnd(20260905), Rs=[];
+  for(let b=0;b<nboot;b++){
+    let tp=0,nd=0,nr=0;
+    for(let i=0;i<ps.length;i++){ const j=Math.floor(rr()*ps.length);
+      tp+=ps[j].TP; nd+=ps[j].ND; nr+=ps[j].NR; }
+    Rs.push(nr?tp/nr:0);
+  }
+  Rs.sort((a,b)=>a-b);
+  const q=(p)=>Rs[Math.min(Rs.length-1,Math.floor(p*Rs.length))];
+  return {TP,ND,NR,recall:R,precision:P,f1:F,ci:[q(.025),q(.975)],n_plots:ps.length};
+}
+function stratumAggregate(site, met, d){
+  const out = {}; STRATA.forEach(e=>out[e]={n:0,tp:0});
+  for(const p of SITES.find(s=>s.k===site).plots){
+    const key=site+"/"+p, a=TREES[key]; if(!a) continue;
+    const pairs = (((a.pairs||{})[met])||{})[d] || [];
+    const ok = new Set(pairs.map(x=>x[1]));
+    for(let i=0;i<a.inv.stratum.length;i++){
+      const e=a.inv.stratum[i]; if(!out[e]) continue;
+      out[e].n++; if(ok.has(i)) out[e].tp++;
+    }
+  }
+  return out;
+}
+
+// ------------------------------------------------------------------ panels
+function leftPanel(){
+  const c = $("#left"); c.textContent="";
+  // plots
+  const gp = el("div",{cls:"group"}, el("h2",{txt:"Plots"}));
+  for(const st of SITES){
+    gp.append(el("div",{cls:"site",txt:st.name}));
+    for(const p of st.plots){
+      const key = st.k+"/"+p;
+      const m = plotMetrics(key, S.method, S.dmatch);
+      const r = m ? m.recall : 0;
+      gp.append(el("div",{cls:"plot","aria-current":String(key===S.key),
+          title:m?`recall ${n3(r)} · ${m.TP} of ${m.NR}`:"no data",
+          onclick:()=>{S.key=key; S.sel=null; S.vw.auto=true; fitView(); render();}},
+        el("span",{cls:"name",txt:p}),
+        el("span",{cls:"bar"}, el("i",{style:`width:${(100*r).toFixed(0)}%`}))));
+    }
+  }
+  c.append(gp);
+
+  // matched pairs, for the tree view
+  if(S.view==="tree"){
+    const g = el("div",{cls:"group"});
+    if(S.method !== "SAT"){
+      g.append(el("h2",{txt:"Pairs"}),
+        el("div",{cls:"note"},
+          `${S.method} assigns no points to trees. Switch to SegmentAnyTree to compare.`));
+    } else {
+      const L = pairList().slice();
+      const ord = {iou:(x,y)=>x.iou-y.iou, height:(x,y)=>y.h-x.h, index:(x,y)=>x.ia-y.ia};
+      L.sort(ord[S.pairOrder] || ord.iou);
+      g.append(el("h2",{txt:`Matched pairs (${L.length})`}),
+        el("div",{cls:"seg"}, ["iou","height","index"].map(k=>
+          el("button",{"aria-pressed":String(S.pairOrder===k),txt:k,
+            onclick:()=>{S.pairOrder=k; leftPanel();}}))),
+        el("div",{cls:"note",style:"margin:5px 0"},
+          S.pairOrder==="iou" ? "from worst to best overlap, to go straight to the bad cases"
+                               : "click a row, or use n and p"));
+      const list = el("div",{style:"max-height:340px;overflow-y:auto;margin:0 -4px"});
+      for(const k of L){
+        const act = S.sel && S.sel.kind==="tree" && S.sel.i===k.ia;
+        const poor = k.nRef < MIN_REF;
+        const col = poor ? "--muted" : k.iou < 0.25 ? "--fail" : k.iou < 0.5 ? "--ams" : "--ok";
+        list.append(el("div",{cls:"plot","aria-current":String(!!act),
+          title:`${k.species} · ${k.stratum} · tree ${n2(k.h)} m, detection ${n2(k.h+k.dh)} m `+
+                `(${k.dh>0?"+":""}${n2(k.dh)}) · ${k.nRef} reference points · IoU ${n3(k.iou)}`+
+                (poor ? " · poor reference, the IoU says nothing" : ""),
+          onclick:()=>{S.sel={kind:"tree",i:k.ia}; leftPanel(); rightPanel(); paint();}},
+          el("span",{cls:"name"}, `${k.ia}`,
+            el("span",{cls:"note",style:"margin-left:6px"}, `${n2(k.h)} m`),
+            el("span",{cls:"note",style:"margin-left:4px",hidden:!poor}, "\u00b7poor")),
+          el("span",{style:`color:var(${col});font-variant-numeric:tabular-nums`}, n3(k.iou))));
+      }
+      g.append(list);
+    }
+    c.append(g);
+  }
+
+  // method
+  const gm = el("div",{cls:"group"}, el("h2",{txt:"Method"}));
+  for(const m of METHODS){
+    gm.append(el("label",{cls:"row"},
+      el("input",{type:"radio",name:"met",checked:S.method===m.k,
+        onchange:()=>{S.method=m.k; S.sel=null; render();}}),
+      el("span",{cls:"pill",style:`background:var(${m.var})`}),
+      el("span",{},m.short),
+      el("span",{cls:"note",style:"margin-left:auto"},m.note)));
+  }
+  gm.append(el("label",{cls:"row",style:"margin-top:4px"},
+    el("input",{type:"checkbox",checked:S.others,onchange:e=>{S.others=e.target.checked;paint();}}),
+    el("span",{},"show the others behind")),
+    el("label",{cls:"row"},
+      el("input",{type:"checkbox",checked:S.highlight,
+        onchange:e=>{S.highlight=e.target.checked; paint();}}),
+      el("span",{},"highlight what is selected")));
+  c.append(gm);
+
+  // distance
+  const gd = el("div",{cls:"group"}, el("h2",{txt:"Matching distance"}),
+    el("div",{cls:"seg"}, ["2.5","3.5","5.0"].map(d=>
+      el("button",{"aria-pressed":String(S.dmatch===d),txt:d+" m",
+        onclick:()=>{S.dmatch=d; S.sel=null; render();}}))));
+  c.append(gd);
+
+  // layers
+  const gc = el("div",{cls:"group"}, el("h2",{txt:"Layers"}));
+  const names = {chm:"canopy (CHM)", points:"points from above",
+                   detCrowns:"detected crowns", region:"inventoried region",
+                   crowns:"field crowns", lines:"pair lines",
+                   det:"detections", outside:"detections outside"};
+  for(const [k,name] of Object.entries(names)){
+    gc.append(el("label",{cls:"row"},
+      el("input",{type:"checkbox",checked:S.layers[k],
+        onchange:e=>{S.layers[k]=e.target.checked; paint(); leftPanel();}}), el("span",{},name)));
+  }
+  if(S.layers.points)
+    gc.append(el("div",{cls:"note",style:"margin-top:5px"},
+      "the colored points are always SegmentAnyTree's: it is the only method that "+
+      "assigns an instance to every return"));
+  const nG = TREES[S.key] ? derive().nLarge : 0;
+  if(S.layers.detCrowns && nG)
+    gc.append(el("div",{cls:"note",style:"margin-top:5px"},
+      `${nG} crown${nG>1?"s":""} of more than ${AREA_MAX_CROWN} m2 not drawn: `+
+      "they are instances that stretch tens of meters and would cover the plot"));
+  if(S.layers.detCrowns)
+    gc.append(el("div",{cls:"note",style:"margin-top:5px"},
+      S.method==="SAT"
+        ? "SegmentAnyTree crown: real convex hull of each instance's points"
+        : `${S.method} crown: circle equivalent to the published area, because the method `+
+          "does not hand out the shape"));
+  c.append(gc);
+
+  // evaluation cropping
+  const gr = el("div",{cls:"group"}, el("h2",{txt:"Evaluation cropping"}),
+    el("div",{cls:"seg"},
+      el("button",{"aria-pressed":String(S.crop==="region"),txt:"region",
+        onclick:()=>{S.crop="region"; S.sel=null; render();}}),
+      el("button",{"aria-pressed":String(S.crop==="tile"),txt:"whole tile",
+        onclick:()=>{S.crop="tile"; S.sel=null; render();}})),
+    el("div",{cls:"note",style:"margin-top:5px"},
+      S.crop==="region"
+        ? "only what falls inside the inventory counts"
+        : "counts the whole tile: outside the inventory there is canopy nobody measured, "+
+          "so precision sinks artificially"));
+  c.append(gr);
+
+  // stratum
+  const ge = el("div",{cls:"group"}, el("h2",{txt:"Stratum"}),
+    el("select",{onchange:e=>{S.stratum=e.target.value; S.sel=null; render();}},
+      ["all",...STRATA].map(v=>el("option",{value:v,selected:S.stratum===v},v))));
+  c.append(ge);
+
+  // queue of cases
+  if(S.view==="map"){
+    const cs = cases();
+    const list = el("div",{style:"max-height:190px;overflow-y:auto;margin:-2px -4px 0"});
+    cs.slice(0,300).forEach((k,n)=>{
+      const act = S.sel && S.sel.kind===k.kind && S.sel.i===k.i;
+      list.append(el("div",{cls:"plot","aria-current":String(!!act),
+        onclick:()=>{S.sel={kind:k.kind,i:k.i}; centerOnSel(); leftPanel(); rightPanel(); paint();}},
+        el("span",{cls:"name",style:`color:var(${k.kind==="tree"?"--fail":"--fp"})`},
+          (k.kind==="tree"?"missed ":"false ")+k.i),
+        el("span",{cls:"note"},k.txt)));
+    });
+    const nA = cs.filter(k=>k.kind==="tree").length;
+    c.append(el("div",{cls:"group"},
+      el("h2",{txt:`Cases (${nA} missed, ${cs.length-nA} false)`}),
+      cs.length?list:el("div",{cls:"note"},"no errors with these filters"),
+      el("div",{cls:"note",style:"margin-top:5px"},"n and p walk the list")));
+  }
+
+  // point color: good for the map seen from above and for the 3D view
+  if(S.layers.points || S.view==="cloud" || S.view==="tree"){
+    const gn = el("div",{cls:"group"}, el("h2",{txt:"Point color"}),
+      el("div",{cls:"seg"},
+        el("button",{"aria-pressed":String(S.cloud.color==="inst"),txt:"instance",
+          onclick:()=>{S.cloud.color="inst"; paint(); leftPanel();}}),
+        el("button",{"aria-pressed":String(S.cloud.color==="height"),txt:"height",
+          onclick:()=>{S.cloud.color="height"; paint(); leftPanel();}})),
+      el("div",{cls:"note",style:"margin-top:5px"},
+        S.cloud.color==="inst"
+          ? "one color per predicted instance: each blob is a tree according to the model"
+          : "green at the bottom, light at the top: it is the canopy relief"));
+    if(S.view==="cloud" || S.view==="tree"){
+      gn.append(el("h2",{txt:"Camera",style:"margin-top:12px"}),
+        el("div",{cls:"seg"}, Object.entries(CAMERAS).map(([k,cam])=>
+          el("button",{txt:cam.name,
+            "aria-pressed":String(Math.abs(S.cloud.incl-cam.incl)<0.02 &&
+                                  Math.abs(S.cloud.rot-cam.rot)<0.02),
+            onclick:()=>{S.cloud.rot=cam.rot; S.cloud.incl=cam.incl;
+                         S.cloud.pan={x:0,y:0}; paint(); leftPanel();}}))),
+        el("div",{cls:"note",style:"margin-top:5px"},
+          "drag to rotate, shift and drag to pan, wheel to zoom"));
+    }
+    c.append(gn);
+  }
+}
+
+function centerOnSel(){
+  const a = TREES[S.key], d = derive();
+  if(!S.sel || !a) return;
+  const X = S.sel.kind==="tree" ? a.inv.x[S.sel.i] : d.det.x[S.sel.i];
+  const Y = S.sel.kind==="tree" ? a.inv.y[S.sel.i] : d.det.y[S.sel.i];
+  if(X==null || Y==null) return;
+  S.vw.auto = false; S.vw.cx = X; S.vw.cy = Y;
+  S.vw.sc = Math.max(S.vw.sc, 6);
+}
+
+function rightPanel(){
+  const c = $("#right"); c.textContent="";
+  const g = GEO[S.key], a = TREES[S.key];
+  const [sit,pair] = S.key.split("/");
+  const siteName = SITES.find(s=>s.k===sit).name;
+
+  c.append(el("div",{cls:"group"},
+    el("h2",{txt:"Plot"}),
+    el("div",{style:"font-weight:650;margin-bottom:6px"}, `${siteName} · ${pair}`),
+    el("dl",{cls:"kv"},
+      el("dt",{txt:"field trees"}), el("dd",{txt:a?String(a.inv.x.length):"--"}),
+      el("dt",{txt:"ALS points"}), el("dd",{txt:g?g.n_points.toLocaleString("en"):"--"}),
+      el("dt",{txt:"density"}), el("dd",{txt:g?n2(g.density_pts_m2)+" pts/m2":"--"}),
+      el("dt",{txt:"maximum height"}), el("dd",{txt:g?n2(g.h_max)+" m":"--"}),
+      el("dt",{txt:"inventoried region"}), el("dd",{txt:g?n2(g.pct_region)+" % of the tile":"--"}),
+      el("dt",{txt:"detections outside"}),
+      el("dd",{txt:(a&&a.det_outside&&a.det_outside[S.method])
+        ? `${a.det_outside[S.method].x.length} of ${a.det_outside[S.method].x.length+a.det[S.method].x.length}`
+        : "--"}))));
+
+  if(a){
+    const t = el("table",{cls:"met"},
+      el("thead",{}, el("tr",{}, el("th",{txt:"method"}), el("th",{txt:"rec."}),
+        el("th",{txt:"p. reg"}), el("th",{txt:"p. tile"}), el("th",{txt:"F1"}))));
+    const tb = el("tbody",{});
+    for(const m of METHODS){
+      const mm = plotMetrics(S.key, m.k, S.dmatch);              // the active cropping
+      const mr = plotMetrics(S.key, m.k, S.dmatch, "region");   // always cropped
+      const mt = plotMetrics(S.key, m.k, S.dmatch, "tile");     // always uncropped
+      tb.append(el("tr",{style:m.k===S.method?"font-weight:650":"",
+        title:mm?`${mm.TP} hits out of ${mm.ND} detections inside, over ${mm.NR} trees`+
+              (mt?` · uncropped: ${mt.TP} of ${mt.ND}`:""):""},
+        el("td",{}, el("span",{cls:"pill",style:`background:var(${m.var});margin-right:5px`}), m.short),
+        el("td",{txt:mm?n3(mm.recall):"--"}), el("td",{txt:mr?n3(mr.precision):"--"}),
+        el("td",{style:"color:var(--muted)",txt:mt?n3(mt.precision):"--"}),
+        el("td",{txt:mm?n3(mm.f1):"--"})));
+    }
+    t.append(tb);
+    c.append(el("div",{cls:"group"}, el("h2",{txt:`This plot at ${S.dmatch} m`}), t,
+      el("div",{cls:"note",style:"margin-top:5px"},
+        "p. reg and p. tile are the precision cropping to the inventory and without "+
+        "cropping. Recall and F1 follow whichever cropping you have active.")));
+  }
+
+  // point by point comparison, only in the tree view
+  if(S.view==="tree"){
+    const g = el("div",{cls:"group"}, el("h2",{txt:"Point by point comparison"}));
+    const cmp = (S.method==="SAT") ? treeComparison() : null;
+    if(S.method!=="SAT"){
+      g.append(el("div",{cls:"note"},
+        `${S.method} assigns no points to trees, so there is nothing to compare here. `+
+        "Switch to SegmentAnyTree."));
+    } else if(!cmp || cmp.noPair){
+      g.append(el("div",{cls:"note"},"pick a matched tree, or press n to walk through them"));
+    } else {
+      g.append(el("dl",{cls:"kv"},
+        el("dt",{txt:"points of the reference"}), el("dd",{txt:String(cmp.nRef)}),
+        el("dt",{txt:"points of the instance"}), el("dd",{txt:String(cmp.nPred)}),
+        el("dt",{txt:"in both"}), el("dd",{txt:String(cmp.nBoth)}),
+        el("dt",{txt:"IoU of points"}), el("dd",{txt:n3(cmp.iou)}),
+        el("dt",{txt:"reference covered"}), el("dd",{txt:pct(cmp.recallPts)}),
+        el("dt",{txt:"instance correct"}), el("dd",{txt:pct(cmp.precPts)})),
+        el("div",{cls:"legend",style:"margin-top:8px"},
+          [3,2,1,0].map(k=>el("div",{},
+            el("span",{cls:"pill",style:`background:var(${CLS_COL[k]})`}), CLS_NAME[k]))),
+        el("div",{cls:"note",style:"margin-top:8px;color:var(--fail)",
+          hidden:cmp.nRef >= MIN_REF},
+          `Only ${cmp.nRef} points in the reference cylinder. The IoU of this pair means `+
+          "nothing: almost always it is a suppressed tree matched by proximity with the "+
+          "crown of the dominant one it has above it, or a tree the inventory gave area "+
+          "zero."),
+        el("div",{cls:"note",style:"margin-top:8px"},
+          "The reference is the crown cylinder that comes out of the radii measured in the "+
+          "field, the same rule with which the strata are defined. It is not an annotated "+
+          "segmentation: nobody labeled these points one by one, so these figures serve "+
+          "to look at cases, not to measure delineation quality."));
+    }
+    c.append(g);
+  }
+
+  // selection
+  const gs = el("div",{cls:"group"}, el("h2",{txt:"Selection"}));
+  if(!S.sel || !a){ gs.append(el("div",{cls:"note"},"click a tree or a detection on the map")); }
+  else if(S.sel.kind==="tree"){
+    const i=S.sel.i, d=derive(), hit=d.treeOK.has(i);
+    const pair = d.pairs.find(p=>p[1]===i);
+    let dist = null;
+    if(pair){ dist = Math.hypot(d.det.x[pair[0]]-a.inv.x[i], d.det.y[pair[0]]-a.inv.y[i]); }
+    gs.append(el("div",{style:`font-weight:650;color:var(${hit?"--ok":"--fail"})`},
+        hit?"tree detected":"tree not detected"),
+      el("dl",{cls:"kv"},
+        el("dt",{txt:"height"}), el("dd",{txt:n2(a.inv.h[i])+" m"}),
+        el("dt",{txt:"crown area"}), el("dd",{txt:n2(a.inv.area[i])+" m2"}),
+        el("dt",{txt:"radius"}), el("dd",{txt:n2(a.inv.r[i])+" m"}),
+        el("dt",{txt:"family"}), el("dd",{txt:a.inv.fam[i]||"?"}),
+        el("dt",{txt:"returns in crown"}), el("dd",{txt:String(a.inv.npts[i])}),
+        el("dt",{txt:"stratum"}), el("dd",{txt:a.inv.stratum[i]}),
+        el("dt",{txt:"distance to its pair"}), el("dd",{txt:dist==null?"--":n2(dist)+" m"})));
+    // what each method does with this tree
+    const tt = el("table",{cls:"met"}, el("thead",{},el("tr",{},el("th",{txt:"method"}),el("th",{txt:"sees it"}))));
+    const tbb = el("tbody",{});
+    for(const m of METHODS){
+      const pairs = (((a.pairs||{})[m.k])||{})[S.dmatch]||[];
+      const v = pairs.some(p=>p[1]===i);
+      tbb.append(el("tr",{}, el("td",{txt:m.short}),
+        el("td",{style:`color:var(${v?"--ok":"--fail"})`, txt:v?"yes":"no"})));
+    }
+    tt.append(tbb); gs.append(tt);
+  } else {
+    const i=S.sel.i, d=derive(), ok=d.detOK.has(i);
+    gs.append(el("div",{style:`font-weight:650;color:var(${ok?"--ok":"--fp"})`},
+        ok?"detection matched":"detection with no pair"),
+      el("dl",{cls:"kv"},
+        el("dt",{txt:"method"}), el("dd",{txt:S.method}),
+        el("dt",{txt:"height"}), el("dd",{txt:n2(d.det.h[i])+" m"}),
+        el("dt",{txt:"area"}), el("dd",{txt:n2(d.det.area[i])+" m2"})));
+  }
+  c.append(gs);
+
+  // legend
+  const L=(color,txt)=>el("div",{}, el("span",{cls:"pill",style:`background:var(${color})`}), txt);
+  c.append(el("div",{cls:"group"}, el("h2",{txt:"Legend"}),
+    el("div",{cls:"legend"},
+      L("--ok","field tree detected"),
+      L("--fail","field tree missed"),
+      L(METHODS.find(m=>m.k===S.method).var,
+        S.method==="SAT" ? "detected crown (real hull) and its diamond"
+                         : "detected crown (equivalent circle) and its diamond"),
+      L("--fp","detection with no pair (cross)"),
+      L("--muted","detection outside the region (hollow circle)"),
+      el("div",{cls:"note",style:"margin-top:4px"},
+        "the circle thickness shows the stratum: thick dominant, thin suppressed"))));
+}
+
+// ------------------------------------------------------------------ results
+const NS="http://www.w3.org/2000/svg";
+const sv=(t,p={},...h)=>{const n=document.createElementNS(NS,t);
+  for(const [k,v] of Object.entries(p)) if(v!==null&&v!==false) n.setAttribute(k,v);
+  for(const c of h.flat()) if(c!=null) n.append(c.nodeType?c:document.createTextNode(c));
+  return n;};
+
+function recallBars(d){
+  const w=430,h=200,ml=40,mb=52,mt=10;
+  const g=sv("svg",{viewBox:`0 0 ${w} ${h}`,width:"100%",style:"max-width:430px"});
+  const y=v=>mt+(1-v)*(h-mt-mb);
+  for(let t=0;t<=1.0001;t+=0.2){
+    g.append(sv("line",{x1:ml,x2:w-6,y1:y(t),y2:y(t),stroke:cssv("--line")}));
+    g.append(sv("text",{x:ml-6,y:y(t)+3.5,"text-anchor":"end","font-size":9,
+      fill:cssv("--muted")},t.toFixed(1)));
+  }
+  const width=(w-ml-10)/2, bw=width/4.2;
+  SITES.forEach((st,si)=>{
+    const x0=ml+si*width+width/2-1.6*bw;
+    METHODS.forEach((m,mi)=>{
+      const a=aggregate(st.k,m.k,d); if(!a) return;
+      const x=x0+mi*bw*1.08;
+      g.append(sv("rect",{x,y:y(a.recall),width:bw*0.94,height:Math.max(0,y(0)-y(a.recall)),
+        fill:cssv(m.var),rx:1.5}));
+      g.append(sv("line",{x1:x+bw*.47,x2:x+bw*.47,y1:y(a.ci[0]),y2:y(a.ci[1]),
+        stroke:cssv("--text"),"stroke-width":1.1}));
+      g.append(sv("line",{x1:x+bw*.27,x2:x+bw*.67,y1:y(a.ci[1]),y2:y(a.ci[1]),stroke:cssv("--text")}));
+      g.append(sv("line",{x1:x+bw*.27,x2:x+bw*.67,y1:y(a.ci[0]),y2:y(a.ci[0]),stroke:cssv("--text")}));
+      g.append(sv("text",{x:x+bw*.47,y:y(a.ci[1])-4,"text-anchor":"middle","font-size":9,
+        fill:cssv("--text")},a.recall.toFixed(3)));
+    });
+    g.append(sv("text",{x:ml+si*width+width/2,y:h-mb+16,"text-anchor":"middle","font-size":10,
+      fill:cssv("--text")},st.name));
+  });
+  METHODS.forEach((m,mi)=>{
+    const x=ml+8+mi*128;
+    g.append(sv("rect",{x,y:h-22,width:9,height:9,fill:cssv(m.var),rx:1.5}));
+    g.append(sv("text",{x:x+13,y:h-14,"font-size":9,fill:cssv("--muted")},m.short));
+  });
+  g.append(sv("text",{x:10,y:mt+4,"font-size":9,fill:cssv("--muted")},"recall"));
+  return g;
+}
+
+function stratumLines(d){
+  const w=430,h=200,ml=40,mb=44,mt=12;
+  const g=sv("svg",{viewBox:`0 0 ${w} ${h}`,width:"100%",style:"max-width:430px"});
+  const y=v=>mt+(1-v)*(h-mt-mb);
+  const xs=i=>ml+12+i*((w-ml-24)/5);
+  for(let t=0;t<=1.0001;t+=0.2){
+    g.append(sv("line",{x1:ml,x2:w-6,y1:y(t),y2:y(t),stroke:cssv("--line")}));
+    g.append(sv("text",{x:ml-6,y:y(t)+3.5,"text-anchor":"end","font-size":9,fill:cssv("--muted")},t.toFixed(1)));
+  }
+  g.append(sv("line",{x1:xs(2.5),x2:xs(2.5),y1:mt,y2:y(0),stroke:cssv("--muted"),
+    "stroke-dasharray":"3 3","stroke-width":.8}));
+  for(const m of METHODS){
+    const pts=[];
+    SITES.forEach((st,si)=>STRATA.forEach((e,ei)=>{
+      const a=stratumAggregate(st.k,m.k,d)[e];
+      pts.push([xs(si*3+ei), y(a.n?a.tp/a.n:0)]);
+    }));
+    g.append(sv("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",
+      stroke:cssv(m.var),"stroke-width":1.6}));
+    pts.forEach(p=>g.append(sv("circle",{cx:p[0],cy:p[1],r:2.6,fill:cssv(m.var)})));
+  }
+  ["Dom","Int","Sup","Dom","Int","Sup"].forEach((t,i)=>
+    g.append(sv("text",{x:xs(i),y:h-mb+15,"text-anchor":"middle","font-size":9,fill:cssv("--text")},t)));
+  SITES.forEach((st,si)=>g.append(sv("text",{x:xs(si*3+1),y:h-mb+29,"text-anchor":"middle",
+    "font-size":9,fill:cssv("--muted")},st.name)));
+  return g;
+}
+
+function byPlot(d){
+  const w=430,h=210,ml=40,mb=40,mt=10;
+  const all=SITES.flatMap(s=>s.plots.map(p=>s.k+"/"+p));
+  const g=sv("svg",{viewBox:`0 0 ${w} ${h}`,width:"100%",style:"max-width:430px"});
+  const y=v=>mt+(1-v)*(h-mt-mb);
+  const xs=i=>ml+6+i*((w-ml-18)/(all.length-1));
+  for(let t=0;t<=1.0001;t+=0.25){
+    g.append(sv("line",{x1:ml,x2:w-6,y1:y(t),y2:y(t),stroke:cssv("--line")}));
+    g.append(sv("text",{x:ml-6,y:y(t)+3.5,"text-anchor":"end","font-size":9,fill:cssv("--muted")},t.toFixed(2)));
+  }
+  g.append(sv("line",{x1:xs(6.5),x2:xs(6.5),y1:mt,y2:y(0),stroke:cssv("--muted"),
+    "stroke-dasharray":"3 3","stroke-width":.8}));
+  for(const m of METHODS){
+    const pts=all.map((k,i)=>{const mm=plotMetrics(k,m.k,d); return [xs(i), y(mm?mm.recall:0)];});
+    g.append(sv("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",
+      stroke:cssv(m.var),"stroke-width":1.3,opacity:.9}));
+    pts.forEach((p,i)=>g.append(sv("circle",{cx:p[0],cy:p[1],r:all[i]===S.key?3.8:2,
+      fill:cssv(m.var),stroke:all[i]===S.key?cssv("--sel"):"none","stroke-width":1})));
+  }
+  all.forEach((k,i)=>{ if(i%2) return;
+    g.append(sv("text",{x:xs(i),y:h-mb+14,"text-anchor":"middle","font-size":7.5,
+      fill:cssv("--muted")},k.split("/")[1]));});
+  return g;
+}
+
+function globalTable(d){
+  const t=el("table",{cls:"big"}, el("thead",{}, el("tr",{},
+    el("th",{txt:"method"}), el("th",{txt:"recall"}), el("th",{txt:"95 % CI"}),
+    el("th",{txt:"precision"}), el("th",{txt:"F1"}), el("th",{txt:"TP"}),
+    el("th",{txt:"ND"}), el("th",{txt:"NR"}))));
+  const tb=el("tbody",{});
+  for(const st of SITES){
+    const rows = METHODS.map(m=>({m, a:aggregate(st.k,m.k,d)})).filter(r=>r.a);
+    const maxR = Math.max(...rows.map(r=>r.a.recall), 0);
+    const maxF = Math.max(...rows.map(r=>r.a.f1), 0);
+    tb.append(el("tr",{cls:"sep"}, el("td",{colspan:8,
+      txt:`${st.name} · ${st.plots.length} plots · ${rows[0]?rows[0].a.NR:0} trees`})));
+    for(const {m,a} of rows){
+      tb.append(el("tr",{},
+        el("td",{}, el("span",{cls:"pill",style:`background:var(${m.var});margin-right:6px`}),
+          m.name, el("span",{cls:"note"}, " " + m.note)),
+        el("td",{cls:a.recall===maxR?"best":"",txt:n3(a.recall)}),
+        el("td",{txt:`[${n3(a.ci[0])}, ${n3(a.ci[1])}]`}),
+        el("td",{txt:n3(a.precision)}),
+        el("td",{cls:a.f1===maxF?"best":"",txt:n3(a.f1)}),
+        el("td",{txt:String(a.TP)}), el("td",{txt:String(a.ND)}), el("td",{txt:String(a.NR)})));
+    }
+  }
+  t.append(tb); return t;
+}
+
+function strataTable(d){
+  const t=el("table",{cls:"big"}, el("thead",{}, el("tr",{},
+    el("th",{txt:"site and stratum"}), el("th",{txt:"trees"}),
+    ...METHODS.map(m=>el("th",{txt:m.short})))));
+  const tb=el("tbody",{});
+  for(const st of SITES){
+    const byMethod = {}; METHODS.forEach(m=>byMethod[m.k]=stratumAggregate(st.k,m.k,d));
+    for(const e of STRATA){
+      const vals = METHODS.map(m=>{const a=byMethod[m.k][e]; return a.n?a.tp/a.n:0;});
+      const mx = Math.max(...vals);
+      tb.append(el("tr",{},
+        el("td",{txt:`${st.name} · ${e}`}),
+        el("td",{txt:String(byMethod[METHODS[0].k][e].n)}),
+        ...vals.map(v=>el("td",{cls:v===mx?"best":"",txt:n3(v)}))));
+    }
+  }
+  t.append(tb); return t;
+}
+
+function resultsView(){
+  const c=$("#view-res"); c.textContent="";
+  const d=S.dmatch;
+  c.append(el("h2",{txt:`Aggregate results at ${d} m`}),
+    el("div",{cls:"note"},
+      "Everything on this tab is recomputed in the browser from the exported pairs, so it "+
+      "responds to the matching distance you choose in the left panel. The intervals come "+
+      "from a bootstrap of 2000 plot resamples with a fixed seed, so they may differ from the "+
+      "reported values in the third digit. The matching is by distance alone for the three methods. "+
+      "If you switch the cropping to the whole tile, the whole table is recomputed counting "+
+      "as false positives the detections that fall on canopy nobody measured: it is the bias "+
+      "of the evaluation frame, seen live."),
+    el("div",{style:"height:14px"}),
+    globalTable(d),
+    el("h3",{txt:"Recall by detectability stratum"}),
+    strataTable(d),
+    el("h3",{txt:"Charts"}),
+    el("div",{cls:"grid2"},
+      el("div",{cls:"card"}, el("h4",{txt:"Recall by site, with interval"}), recallBars(d)),
+      el("div",{cls:"card"}, el("h4",{txt:"Recall by stratum"}), stratumLines(d)),
+      el("div",{cls:"card"}, el("h4",{txt:"Recall plot by plot"}), byPlot(d))));
+}
+
+// ------------------------------------------------------------------ interaction
+const wrap = $("#canvas-wrap");
+const vres = el("div",{id:"view-res",style:"position:absolute;inset:0;display:none"});
+wrap.append(vres);
+
+function nearest(px,py){
+  const a=TREES[S.key], d=derive();
+  if(!a) return null;
+  let best=null, md=1e9;
+  for(let i=0;i<d.det.x.length;i++){
+    const dd=Math.hypot(sx(d.det.x[i])-px, sy(d.det.y[i])-py);
+    if(dd<md && dd<10){ md=dd; best={kind:"det",i,d:dd}; }
+  }
+  for(let i=0;i<a.inv.x.length;i++){
+    if(!treeVisible(a,i)) continue;
+    const dd=Math.hypot(sx(a.inv.x[i])-px, sy(a.inv.y[i])-py);
+    const r=Math.max(6, a.inv.r[i]*S.vw.sc);
+    if(dd<r && dd<md+4){ md=dd; best={kind:"tree",i,d:dd}; }
+  }
+  return best;
+}
+
+let dragState=null, hoverPend=false, lastMouse={x:0,y:0};
+cv.addEventListener("mousedown",e=>{
+  dragState={x:e.offsetX, y:e.offsetY, cx:S.vw.cx, cy:S.vw.cy,
+            rot:S.cloud.rot, inc:S.cloud.incl, pan:{...S.cloud.pan}, sh:e.shiftKey, moved:false};
+});
+window.addEventListener("mouseup",()=>{dragState=null;});
+cv.addEventListener("mousemove",e=>{
+  const px=e.offsetX, py=e.offsetY;
+  if(dragState){
+    const dx=px-dragState.x, dy=py-dragState.y;
+    if(Math.abs(dx)+Math.abs(dy)>3) dragState.moved=true;
+    if(S.view==="map"){
+      S.vw.auto = false;
+      S.vw.cx = dragState.cx - dx/S.vw.sc;
+      S.vw.cy = dragState.cy + dy/S.vw.sc;
+    } else if(S.view==="cloud" || S.view==="tree"){
+      if(dragState.sh){ S.cloud.pan={x:dragState.pan.x+dx, y:dragState.pan.y+dy}; }
+      else { S.cloud.rot = dragState.rot + dx*0.008;
+             S.cloud.incl = Math.max(0.05, Math.min(1.55, dragState.inc - dy*0.006)); }
+    }
+    paint(); return;
+  }
+  if(S.view==="cloud"){
+    // The highlight is recomputed at most once per frame.
+    if(!hoverPend){
+      hoverPend = true;
+      requestAnimationFrame(()=>{
+        hoverPend = false;
+        const iid = instUnderCursor(lastMouse.x, lastMouse.y);
+        if(iid !== S.cloud.focus){ S.cloud.focus = iid; paint(); }
+      });
+    }
+    lastMouse = {x:px, y:py};
+    return;
+  }
+  if(S.view!=="map") return;
+  const c=nearest(px,py), t=$("#tip"), a=TREES[S.key], d=derive();
+  if(!c || !a){ t.style.display="none"; return; }
+  let txt;
+  if(c.kind==="tree"){
+    const hit=d.treeOK.has(c.i);
+    txt = `<b>tree ${c.i}</b> · ${a.inv.stratum[c.i]}<br>`+
+          `${n2(a.inv.h[c.i])} m tall, crown ${n2(a.inv.area[c.i])} m2<br>`+
+          `${a.inv.npts[c.i]} returns · <b style="color:var(${hit?"--ok":"--fail"})">`+
+          `${hit?"detected":"not detected"}</b>`;
+  } else {
+    const ok=d.detOK.has(c.i);
+    txt = `<b>${S.method} detection ${c.i}</b><br>${n2(d.det.h[c.i])} m, ${n2(d.det.area[c.i])} m2<br>`+
+          `<b style="color:var(${ok?"--ok":"--fp"})">${ok?"matched":"no pair"}</b>`;
+  }
+  t.innerHTML = txt;
+  t.style.display="block";
+  t.style.left = Math.min(W-240, px+14)+"px";
+  t.style.top  = Math.min(H-90, py+14)+"px";
+});
+cv.addEventListener("mouseleave",()=>{
+  $("#tip").style.display="none";
+  if(S.cloud.focus != null){ S.cloud.focus = null; paint(); }
+});
+cv.addEventListener("click",e=>{
+  if(dragState && dragState.moved) return;
+  if(S.view==="cloud"){
+    // Pin the instance underneath: its detection gets selected, so the right panel and
+    // the tree view start talking about it.
+    const iid = instUnderCursor(e.offsetX, e.offsetY);
+    const j = detOfInstance(iid);
+    S.sel = j == null ? null : {kind:"det", i:j};
+    S.cloud.focus = null;
+    rightPanel(); paint();
+    return;
+  }
+  if(S.view!=="map") return;
+  const c=nearest(e.offsetX,e.offsetY);
+  S.sel = c ? {kind:c.kind,i:c.i} : null;
+  rightPanel(); paint();
+});
+cv.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const f = Math.exp(-e.deltaY*0.0015);
+  if(S.view==="cloud" || S.view==="tree"){
+    S.cloud.zoom=Math.max(.2,Math.min(12,S.cloud.zoom*f)); paint(); return; }
+  S.vw.auto = false;
+  const wx0=wx_(e.offsetX), wy0=wy_(e.offsetY);
+  S.vw.sc = Math.max(.4, Math.min(120, S.vw.sc*f));
+  S.vw.cx += wx0 - wx_(e.offsetX);
+  S.vw.cy += wy0 - wy_(e.offsetY);
+  paint();
+},{passive:false});
+
+window.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT") return;
+  const all=SITES.flatMap(s=>s.plots.map(p=>s.k+"/"+p));
+  const i=all.indexOf(S.key);
+  if(e.key==="ArrowDown"||e.key==="j"){ S.key=all[(i+1)%all.length]; S.sel=null; S.vw.auto=true; fitView(); render(); }
+  if(e.key==="ArrowUp"||e.key==="k"){ S.key=all[(i-1+all.length)%all.length]; S.sel=null; S.vw.auto=true; fitView(); render(); }
+  if("12345".includes(e.key)&&e.key!==""){ S.method=METHODS[+e.key-1].k; S.sel=null; render(); }
+  if(e.key==="h"){ S.hide=!S.hide; paint(); }
+  if(e.key==="r"){ S.highlight=!S.highlight; leftPanel(); paint(); }
+  if((e.key==="n"||e.key==="p") && S.view==="tree"){
+    const right=derive();
+    const ar=right.pairs.map(pr=>pr[1]).sort((x,y)=>x-y);
+    if(!ar.length) return;
+    let j = S.sel && S.sel.kind==="tree" ? ar.indexOf(S.sel.i) : -1;
+    j = (j + (e.key==="n"?1:ar.length-1) + ar.length) % ar.length;
+    S.sel={kind:"tree",i:ar[j]}; leftPanel(); rightPanel(); paint();
+    return;
+  }
+  if(e.key==="n"||e.key==="p"){
+    const cs=cases(); if(!cs.length) return;
+    let j = S.sel ? cs.findIndex(k=>k.kind===S.sel.kind && k.i===S.sel.i) : -1;
+    j = (j + (e.key==="n"?1:cs.length-1) + cs.length) % cs.length;
+    S.sel={kind:cs[j].kind,i:cs[j].i}; centerOnSel(); leftPanel(); rightPanel(); paint();
+  }
+});
+
+// ------------------------------------------------------------------ views
+function switchView(v){
+  S.view=v;
+  for(const b of $("#tabs").children) b.setAttribute("aria-selected", String(b.dataset.v===v));
+  const res = v==="res";
+  vres.style.display = res?"block":"none";
+  cv.style.display   = res?"none":"block";
+  $("#scale").style.display = (v==="map")?"block":"none";
+  $("#help").style.display  = res?"none":"block";
+  $("#help").textContent = v==="map"
+    ? "drag to move, wheel to zoom, click to select"
+    : (v==="tree" ? "n and p go to the next pair, drag to rotate, wheel to zoom"
+                   : "drag to rotate, shift and drag to pan, wheel to zoom");
+  $("#right").style.display = res?"none":"block";
+  $("#body").className = res?"single":"";
+  document.getElementById("body").style.gridTemplateColumns = res?"206px 1fr":"206px 1fr 274px";
+  render();
+}
+$("#tabs").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(b) switchView(b.dataset.v);
+});
+$("#btn-fit").addEventListener("click",()=>{
+  if(S.view==="cloud"){ S.cloud={rot:.6,incl:.30,zoom:1,color:S.cloud.color,pan:{x:0,y:0}}; }
+  else { S.vw.auto=true; fitView(); }
+  paint();
+});
+$("#btn-theme").addEventListener("click",()=>{
+  const d=document.documentElement;
+  d.dataset.theme = d.dataset.theme==="dark" ? "light" : "dark";
+  try{ localStorage.setItem("viewer-theme", d.dataset.theme); }catch(_){}
+  tinted.clear();
+  render();
+});
+
+function render(){
+  leftPanel();
+  if(S.view==="res"){ resultsView(); }
+  else { rightPanel(); paint(); }
+  const g=GEO[S.key];
+  $("#sub").textContent = g ? `· ${SITES.find(s=>s.k===S.key.split("/")[0]).name} ${S.key.split("/")[1]}` : "";
+}
+
+window.addEventListener("resize",()=>{ measure(); paint(); });
+
+// ------------------------------------------------------------------ startup
+(function init(){
+  try{
+    const t=localStorage.getItem("viewer-theme");
+    if(t) document.documentElement.dataset.theme=t;
+    else if(matchMedia("(prefers-color-scheme: dark)").matches)
+      document.documentElement.dataset.theme="dark";
+  }catch(_){}
+  measure();
+  const hasData = Object.keys(TREES).length || Object.keys(GEO).length;
+  $("#loading").style.display = hasData ? "none" : "grid";
+  if(!hasData){
+    $("#loading").innerHTML = "<div style='text-align:center;max-width:400px'>"+
+      "<b>The data files are missing.</b><br><br>Run <code>python3 pack_json_to_js.py</code> "+
+      "in this folder to generate <code>data/geo.js</code>, <code>data/trees.js</code> "+
+      "and <code>data/clouds.js</code>.</div>";
+    return;
+  }
+  if(!TREES[S.key]) S.key = Object.keys(TREES)[0] || Object.keys(GEO)[0];
+  fitView();
+  switchView("map");
+  requestAnimationFrame(()=>{ measure(); paint(); });
+})();
+</script>
+</body>
+</html>

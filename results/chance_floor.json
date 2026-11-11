@@ -1,0 +1,117 @@
+{
+  "stem_spacing": {
+    "cham": {
+      "median": 1.89,
+      "within_3_5": 0.817,
+      "within_2_0": 0.529
+    },
+    "pell": {
+      "median": 1.98,
+      "within_3_5": 0.807,
+      "within_2_0": 0.506
+    }
+  },
+  "by_tolerance": {
+    "3.5": {
+      "SAT": {
+        "recall": 0.676,
+        "chance": 0.515,
+        "excess": 0.161,
+        "precision": 0.84,
+        "ND": 1156
+      },
+      "AMS3D": {
+        "recall": 0.643,
+        "chance": 0.503,
+        "excess": 0.14,
+        "precision": 0.832,
+        "ND": 1110
+      },
+      "FF3D": {
+        "recall": 0.611,
+        "chance": 0.476,
+        "excess": 0.135,
+        "precision": 0.84,
+        "ND": 1045
+      },
+      "TreeLite3D": {
+        "recall": 0.564,
+        "chance": 0.509,
+        "excess": 0.055,
+        "precision": 0.693,
+        "ND": 1169
+      },
+      "WS": {
+        "recall": 0.41,
+        "chance": 0.313,
+        "excess": 0.097,
+        "precision": 0.936,
+        "ND": 629
+      },
+      "_order_recall": [
+        "SegmentAnyTree",
+        "AMS3D",
+        "ForestFormer3D",
+        "TreeLite3D",
+        "CHM watershed"
+      ],
+      "_order_excess": [
+        "SegmentAnyTree",
+        "AMS3D",
+        "ForestFormer3D",
+        "CHM watershed",
+        "TreeLite3D"
+      ]
+    }
+  },
+  "thinning": {
+    "SAT": {
+      "100": {
+        "recall": 0.624,
+        "chance": 0.489,
+        "excess": 0.136,
+        "ND": 382,
+        "precision": 0.887
+      },
+      "25": {
+        "recall": 0.545,
+        "chance": 0.449,
+        "excess": 0.096,
+        "ND": 334,
+        "precision": 0.886
+      }
+    },
+    "FF3D": {
+      "100": {
+        "recall": 0.63,
+        "chance": 0.506,
+        "excess": 0.124,
+        "ND": 408,
+        "precision": 0.838
+      },
+      "25": {
+        "recall": 0.372,
+        "chance": 0.31,
+        "excess": 0.062,
+        "ND": 214,
+        "precision": 0.944
+      }
+    },
+    "TreeLite3D": {
+      "100": {
+        "recall": 0.678,
+        "chance": 0.645,
+        "excess": 0.032,
+        "ND": 576,
+        "precision": 0.639
+      },
+      "25": {
+        "recall": 0.21,
+        "chance": 0.175,
+        "excess": 0.035,
+        "ND": 131,
+        "precision": 0.87
+      }
+    }
+  }
+}

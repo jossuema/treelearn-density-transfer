@@ -1,0 +1,49 @@
+# Field data and point clouds are not redistributed: they belong to IRSTEA and FEM.
+IRSTEA_dataset/
+trento_dataset/
+AMS/
+ams_port/
+thinning/
+e1_dets_*.csv
+*.las
+*.laz
+*.pth
+*.npy
+*.ply
+
+# Model output and viewer data: these carry tree coordinates.
+# Matched by pattern rather than by name, so a rename cannot quietly expose them.
+*_output/
+*_output_*/
+output_*/
+viewer/data/
+/all_detections.json
+/detections_*.json
+thinning_detections_*.json
+/ff3d_evaluation.json
+/sat_evaluation.json
+/treelite_evaluation.json
+trees.json
+clouds.json
+crowns.json
+geo.json
+instances.json
+
+# Third-party code fetched at build time, not ours to redistribute
+modal/ff3d_repo/
+
+# Generated LaTeX tables and figures: they belong to the manuscript, not here
+figures/tab_*.tex
+figures/fig*.pdf
+figures/fig*.png
+figures/*_labels.tex
+
+# Work files
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+venv/
+.ipynb_checkpoints/
+logs/
+nb_fig*.png

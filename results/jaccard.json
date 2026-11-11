@@ -1,0 +1,137 @@
+{
+  "Chamrousse": {
+    "SAT": {
+      "n_pairs": 630,
+      "J_2D": 0.481,
+      "J_vol_height": 0.448,
+      "J_vol_depth": 0.406,
+      "area_R2": 0.362,
+      "area_RMSE": 16.79,
+      "pct_no_overlap": 2.9
+    },
+    "SAT_circle": {
+      "n_pairs": 630,
+      "J_2D": 0.491,
+      "J_vol_height": 0.457,
+      "J_vol_depth": 0.413,
+      "area_R2": 0.363,
+      "area_RMSE": 16.78,
+      "pct_no_overlap": 2.5
+    },
+    "AMS3D": {
+      "n_pairs": 572,
+      "J_2D": 0.468,
+      "J_vol_height": 0.435,
+      "J_vol_depth": 0.381,
+      "area_R2": 0.284,
+      "area_RMSE": 18.72,
+      "pct_no_overlap": 4.2
+    },
+    "Watershed": {
+      "n_pairs": 385,
+      "J_2D": 0.518,
+      "J_vol_height": 0.484,
+      "J_vol_depth": null,
+      "area_R2": -0.326,
+      "area_RMSE": 26.6,
+      "pct_no_overlap": 0.3
+    }
+  },
+  "Pellizzano": {
+    "SAT": {
+      "n_pairs": 333,
+      "J_2D": 0.439,
+      "J_vol_height": 0.411,
+      "J_vol_depth": null,
+      "area_R2": -0.017,
+      "area_RMSE": 18.02,
+      "pct_no_overlap": 3.9
+    },
+    "SAT_circle": {
+      "n_pairs": 333,
+      "J_2D": 0.47,
+      "J_vol_height": 0.442,
+      "J_vol_depth": null,
+      "area_R2": -0.011,
+      "area_RMSE": 17.97,
+      "pct_no_overlap": 2.4
+    },
+    "AMS3D": {
+      "n_pairs": 350,
+      "J_2D": 0.456,
+      "J_vol_height": 0.428,
+      "J_vol_depth": null,
+      "area_R2": 0.371,
+      "area_RMSE": 14.32,
+      "pct_no_overlap": 6.6
+    },
+    "Watershed": {
+      "n_pairs": 203,
+      "J_2D": 0.529,
+      "J_vol_height": 0.512,
+      "J_vol_depth": null,
+      "area_R2": -1.069,
+      "area_RMSE": 27.04,
+      "pct_no_overlap": 0.5
+    }
+  },
+  "sensitivity_ref_pos": {
+    "Chamrousse": {
+      "SAT": {
+        "stem": {
+          "n_pairs": 632,
+          "J_vol_height": 0.448
+        },
+        "centroid": {
+          "n_pairs": 637,
+          "J_vol_height": 0.449
+        }
+      },
+      "AMS3D": {
+        "stem": {
+          "n_pairs": 575,
+          "J_vol_height": 0.435
+        },
+        "centroid": {
+          "n_pairs": 580,
+          "J_vol_height": 0.446
+        }
+      }
+    },
+    "Pellizzano": {
+      "SAT": {
+        "stem": {
+          "n_pairs": 333,
+          "J_vol_height": 0.411
+        },
+        "centroid": {
+          "n_pairs": 333,
+          "J_vol_height": 0.416
+        }
+      },
+      "AMS3D": {
+        "stem": {
+          "n_pairs": 350,
+          "J_vol_height": 0.428
+        },
+        "centroid": {
+          "n_pairs": 350,
+          "J_vol_height": 0.43
+        }
+      }
+    }
+  },
+  "tusa_saved_matches": {
+    "n_pairs": 848,
+    "J_mean": 0.438,
+    "Chamrousse": {
+      "n_pairs": 506,
+      "J_mean": 0.4345
+    },
+    "Pellizzano": {
+      "n_pairs": 342,
+      "J_mean": 0.4432
+    },
+    "published_in_the_AMS3D_paper": 0.537
+  }
+}
